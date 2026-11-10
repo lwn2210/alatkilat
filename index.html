@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -282,6 +283,62 @@
               <span class="text-xs font-semibold px-2 py-0.5 rounded bg-orange-500/10 text-orange-400">Security & Dev</span>
               <h3 class="text-base font-bold text-white mt-1">Hash & Encoder Tester</h3>
               <p class="text-xs text-slate-400 mt-1">Generate SHA-256, SHA-512, MD5, Base64 & URL Encode/Decode instan client-side.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 15: Pembersih Teks Copy-Paste -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="util" onclick="switchView('tool-clean-text')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <i data-lucide="align-left" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400">Skripsi & Word</span>
+              <h3 class="text-base font-bold text-white mt-1">Pembersih Teks Copy-Paste</h3>
+              <p class="text-xs text-slate-400 mt-1">Hapus enter patah dan spasi acak hasil copy dari PDF/jurnal agar rapi di Word.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 16: OCR Gambar ke Teks -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="photo" onclick="switchView('tool-ocr-text')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <i data-lucide="scan-text" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400">OCR Lokal</span>
+              <h3 class="text-base font-bold text-white mt-1">OCR Ekstrak Teks Gambar</h3>
+              <p class="text-xs text-slate-400 mt-1">Salin tulisan dari foto buku, dokumen scan, atau nota belanja tanpa ketik ulang.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 17: Kalkulator Mana Lebih Murah -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="finance" onclick="switchView('tool-unit-price')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <i data-lucide="scale" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Hemat Belanja</span>
+              <h3 class="text-base font-bold text-white mt-1">Kalkulator Mana Lebih Murah?</h3>
+              <p class="text-xs text-slate-400 mt-1">Bandingkan 2 barang beda ukuran & harga untuk tahu mana yang paling hemat per gram/ml.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 18: Cari Barang Termurah di Olshop -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="finance" onclick="switchView('tool-olshop-finder')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">Multi Olshop</span>
+              <h3 class="text-base font-bold text-white mt-1">Pencari Barang Termurah</h3>
+              <p class="text-xs text-slate-400 mt-1">Bandingkan harga Shopee, Tokopedia, Blibli, dan Lazada dalam 1 kali ketik.</p>
             </div>
           </div>
         </div>
@@ -950,6 +1007,190 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- TOOL 15: Pembersih Teks Copy-Paste -->
+      <section id="tool-clean-text" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Pembersih Teks Copy-Paste (PDF to Word)</h2>
+          <p class="text-xs text-slate-400 mt-1">Hapus enter patah, satukan kata terpotong tanda hubung, dan rapikan spasi.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <textarea id="input-clean-text" rows="7" placeholder="Tempel teks acak hasil copy dari PDF / jurnal di sini..." class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:border-amber-500 focus:outline-none"></textarea>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <button onclick="cleanTextAction('join-lines')" class="p-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition">
+              Satukan Baris Patah
+            </button>
+            <button onclick="cleanTextAction('fix-hyphens')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">
+              Gabung Kata (Kata- nya)
+            </button>
+            <button onclick="cleanTextAction('all')" class="p-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition">
+              Rapikan Semua (1-Klik)
+            </button>
+          </div>
+
+          <div class="space-y-2 pt-2">
+            <label class="text-xs font-semibold text-slate-400">Hasil Teks Bersih Siap Paste ke Word:</label>
+            <textarea id="output-clean-text" rows="7" readonly class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs font-mono focus:outline-none"></textarea>
+            <button onclick="copyCleanedText()" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
+              <i data-lucide="copy" class="w-4 h-4"></i> Salin Teks Bersih
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL 16: OCR Gambar ke Teks -->
+      <section id="tool-ocr-text" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">OCR Ekstrak Teks dari Gambar</h2>
+          <p class="text-xs text-slate-400 mt-1">Salin tulisan dari foto buku, dokumen scan, atau nota tanpa ketik manual (100% lokal).</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-ocr-img" class="border-2 border-dashed border-slate-700 hover:border-rose-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="scan-text" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih Foto Dokumen / Tulisan</p>
+            <p class="text-xs text-slate-500 mt-1">Mendukung Bahasa Indonesia & Inggris</p>
+            <input type="file" id="input-ocr-img" accept="image/*" class="hidden">
+          </div>
+
+          <div id="ocr-progress-box" class="hidden space-y-2">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span id="ocr-status-text">Mempersiapkan mesin OCR...</span>
+              <span id="ocr-percent-text">0%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div id="ocr-bar" class="bg-rose-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div id="result-ocr-box" class="hidden space-y-3">
+            <textarea id="output-ocr-text" rows="8" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs font-mono focus:outline-none"></textarea>
+            <div class="flex gap-2">
+              <button onclick="copyOcrText()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
+                <i data-lucide="copy" class="w-4 h-4"></i> Salin Teks
+              </button>
+              <button onclick="downloadOcrTxt()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 transition">
+                <i data-lucide="download" class="w-4 h-4"></i> Simpan (.TXT)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL 17: Kalkulator Mana Lebih Murah -->
+      <section id="tool-unit-price" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Kalkulator Mana Lebih Murah? (Per Unit)</h2>
+          <p class="text-xs text-slate-400 mt-1">Bandingkan 2 produk beda ukuran & harga untuk tahu produk mana yang paling hemat.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Produk A -->
+            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div class="text-xs font-bold text-brand-400">PRODUK A</div>
+              <div>
+                <label class="text-[11px] text-slate-400 block mb-1">Harga (Rp):</label>
+                <input type="number" id="up-price-a" placeholder="Contoh: 18500" oninput="compareUnitPrice()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[11px] text-slate-400 block mb-1">Isi / Berat:</label>
+                  <input type="number" id="up-vol-a" placeholder="900" oninput="compareUnitPrice()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs">
+                </div>
+                <div>
+                  <label class="text-[11px] text-slate-400 block mb-1">Satuan:</label>
+                  <select id="up-unit-a" onchange="compareUnitPrice()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs">
+                    <option value="ml">ml (Mililiter)</option>
+                    <option value="l">Liter</option>
+                    <option value="gr">Gram</option>
+                    <option value="kg">Kilogram</option>
+                    <option value="pcs">Pcs / Butir</option>
+                  </select>
+                </div>
+              </div>
+              <div class="text-[11px] text-slate-400" id="up-cost-a">Harga per unit: -</div>
+            </div>
+
+            <!-- Produk B -->
+            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div class="text-xs font-bold text-teal-400">PRODUK B</div>
+              <div>
+                <label class="text-[11px] text-slate-400 block mb-1">Harga (Rp):</label>
+                <input type="number" id="up-price-b" placeholder="Contoh: 39000" oninput="compareUnitPrice()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[11px] text-slate-400 block mb-1">Isi / Berat:</label>
+                  <input type="number" id="up-vol-b" placeholder="2" oninput="compareUnitPrice()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs">
+                </div>
+                <div>
+                  <label class="text-[11px] text-slate-400 block mb-1">Satuan:</label>
+                  <select id="up-unit-b" onchange="compareUnitPrice()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs">
+                    <option value="l">Liter</option>
+                    <option value="ml">ml (Mililiter)</option>
+                    <option value="gr">Gram</option>
+                    <option value="kg">Kilogram</option>
+                    <option value="pcs">Pcs / Butir</option>
+                  </select>
+                </div>
+              </div>
+              <div class="text-[11px] text-slate-400" id="up-cost-b">Harga per unit: -</div>
+            </div>
+          </div>
+
+          <!-- Result banner -->
+          <div id="up-verdict-box" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-1">
+            <div id="up-verdict-title" class="text-sm font-bold text-slate-300">Masukkan harga dan ukuran kedua produk di atas.</div>
+            <div id="up-verdict-desc" class="text-xs text-slate-500">Kalkulator otomatis menghitung perbandingan nilai hematnya.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL 18: Pencari Barang Termurah di Olshop -->
+      <section id="tool-olshop-finder" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Pencari Barang Termurah di Marketplace</h2>
+          <p class="text-xs text-slate-400 mt-1">Cari dan bandingkan harga di Shopee, Tokopedia, Blibli, dan Lazada sekaligus.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1">Ketik Nama Produk / Barang:</label>
+            <input type="text" id="olshop-keyword" placeholder="Contoh: logitech g304, kopi arabika 250gr, susu uht 1 liter" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-blue-500 focus:outline-none">
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <input type="checkbox" id="olshop-sort-cheapest" checked class="rounded bg-slate-800 border-slate-700 text-brand-500">
+            <label for="olshop-sort-cheapest">Otomatis urutkan dari harga paling murah</label>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+            <button onclick="openOlshopSearch('shopee')" class="p-3 rounded-xl bg-orange-600/20 border border-orange-500/40 hover:bg-orange-600 hover:text-white text-orange-400 font-semibold text-xs flex flex-col items-center gap-1 transition">
+              <span>Shopee</span>
+              <span class="text-[10px] opacity-75">Buka Tab</span>
+            </button>
+            <button onclick="openOlshopSearch('tokopedia')" class="p-3 rounded-xl bg-emerald-600/20 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white text-emerald-400 font-semibold text-xs flex flex-col items-center gap-1 transition">
+              <span>Tokopedia</span>
+              <span class="text-[10px] opacity-75">Buka Tab</span>
+            </button>
+            <button onclick="openOlshopSearch('blibli')" class="p-3 rounded-xl bg-blue-600/20 border border-blue-500/40 hover:bg-blue-600 hover:text-white text-blue-400 font-semibold text-xs flex flex-col items-center gap-1 transition">
+              <span>Blibli</span>
+              <span class="text-[10px] opacity-75">Buka Tab</span>
+            </button>
+            <button onclick="openOlshopSearch('lazada')" class="p-3 rounded-xl bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600 hover:text-white text-indigo-400 font-semibold text-xs flex flex-col items-center gap-1 transition">
+              <span>Lazada</span>
+              <span class="text-[10px] opacity-75">Buka Tab</span>
+            </button>
+          </div>
+
+          <button onclick="openAllOlshopTabs()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition mt-2">
+            <i data-lucide="external-link" class="w-4 h-4"></i> Buka Semua Marketplace Sekaligus
+          </button>
         </div>
       </section>
 

@@ -94,6 +94,7 @@ function setupDragAndDrop() {
   bindDrop('drop-compress-pdf', 'input-compress-pdf', handleCompressPdfUpload);
   bindDrop('drop-extract-pdf', 'input-extract-pdf', handleExtractPdfUpload);
   bindDrop('drop-audio-trimmer', 'input-audio-trimmer', handleAudioUpload);
+  bindDrop('drop-ocr-img', 'input-ocr-img', handleOcrUpload);
 }
 
 function bindDrop(boxId, inputId, handler) {
@@ -1525,4 +1526,217 @@ function calculateMD5(str) {
 
   var output = md51(unescape(encodeURIComponent(str)));
   return rhex(output[0]) + rhex(output[1]) + rhex(output[2]) + rhex(output[3]);
+}
+
+// ==========================================
+// TOOL 15: PEMBERSIH TEKS COPY-PASTE (PDF TO WORD)
+// ==========================================
+function cleanTextAction(mode) {
+  const input = document.getElementById('input-clean-text').value;
+  const output = document.getElementById('output-clean-text');
+  if (!input) {
+    output.value = '';
+    return;
+  }
+
+  let text = input;
+
+  if (mode === 'join-lines' || mode === 'all') {
+    // Replace single line breaks with spaces, preserving double line breaks (paragraphs)
+    text = text.replace(/([^\n])\n([^\n])/g, '$1 $2');
+  }
+
+  if (mode === 'fix-hyphens' || mode === 'all') {
+    // Merge hyphenated words across line breaks or spaces (e.g. kon- figurasi -> konfigurasi)
+    text = text.replace(/(\b\w+)-\s+(\w+\b)/g, '$1$2');
+  }
+
+  if (mode === 'all') {
+    // Clean multiple consecutive spaces into single space
+    text = text.replace(/[ \t]+/g, ' ');
+    // Clean spaces before punctuation
+    text = text.replace(/\s+([.,;:!?])/g, '$1');
+  }
+
+  output.value = text.trim();
+}
+
+function copyCleanedText() {
+  const output = document.getElementById('output-clean-text');
+  if (!output.value) return;
+  navigator.clipboard.writeText(output.value).then(() => {
+    alert('Teks bersih berhasil disalin ke clipboard!');
+  });
+}
+
+// ==========================================
+// TOOL 16: OCR GAMBAR KE TEKS
+// ==========================================
+let currentOcrText = '';
+
+async function handleOcrUpload(files) {
+  const file = files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+
+  const progressBox = document.getElementById('ocr-progress-box');
+  const progressBar = document.getElementById('ocr-bar');
+  const statusText = document.getElementById('ocr-status-text');
+  const percentText = document.getElementById('ocr-percent-text');
+  const resultBox = document.getElementById('result-ocr-box');
+  const outputArea = document.getElementById('output-ocr-text');
+
+  progressBox.classList.remove('hidden');
+  resultBox.classList.add('hidden');
+
+  try {
+    if (typeof Tesseract === 'undefined') {
+      throw new Error('Modul OCR sedang dimuat, coba sesaat lagi.');
+    }
+
+    const worker = await Tesseract.createWorker('ind+eng', 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round((m.progress || 0) * 100);
+          progressBar.style.width = pct + '%';
+          percentText.textContent = pct + '%';
+          statusText.textContent = 'Membaca karakter teks (' + pct + '%)...';
+        } else {
+          statusText.textContent = m.status || 'Memproses berkas...';
+        }
+      }
+    });
+
+    const ret = await worker.recognize(file);
+    currentOcrText = ret.data.text.trim();
+    outputArea.value = currentOcrText;
+
+    await worker.terminate();
+
+    progressBox.classList.add('hidden');
+    resultBox.classList.remove('hidden');
+    lucide.createIcons();
+  } catch (err) {
+    alert('Gagal membaca teks gambar: ' + err.message);
+    progressBox.classList.add('hidden');
+  }
+}
+
+function copyOcrText() {
+  if (!currentOcrText) return;
+  navigator.clipboard.writeText(currentOcrText).then(() => {
+    alert('Hasil OCR berhasil disalin ke clipboard!');
+  });
+}
+
+function downloadOcrTxt() {
+  if (!currentOcrText) return;
+  const blob = new Blob([currentOcrText], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ocr-hasil-${Date.now()}.txt`;
+  a.click();
+}
+
+// ==========================================
+// TOOL 17: KALKULATOR MANA LEBIH MURAH?
+// ==========================================
+function compareUnitPrice() {
+  const pA = parseFloat(document.getElementById('up-price-a').value) || 0;
+  const vA = parseFloat(document.getElementById('up-vol-a').value) || 0;
+  const uA = document.getElementById('up-unit-a').value;
+
+  const pB = parseFloat(document.getElementById('up-price-b').value) || 0;
+  const vB = parseFloat(document.getElementById('up-vol-b').value) || 0;
+  const uB = document.getElementById('up-unit-b').value;
+
+  const costAEl = document.getElementById('up-cost-a');
+  const costBEl = document.getElementById('up-cost-b');
+  const titleEl = document.getElementById('up-verdict-title');
+  const descEl = document.getElementById('up-verdict-desc');
+  const boxEl = document.getElementById('up-verdict-box');
+
+  if (pA <= 0 || vA <= 0 || pB <= 0 || vB <= 0) {
+    costAEl.textContent = 'Harga per unit: -';
+    costBEl.textContent = 'Harga per unit: -';
+    titleEl.textContent = 'Masukkan harga dan ukuran kedua produk di atas.';
+    descEl.textContent = 'Kalkulator otomatis menghitung perbandingan nilai hematnya.';
+    boxEl.className = 'p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-1';
+    return;
+  }
+
+  // Normalize to base unit (ml or gram or pcs)
+  const normA = (uA === 'l' || uA === 'kg') ? vA * 1000 : vA;
+  const normB = (uB === 'l' || uB === 'kg') ? vB * 1000 : vB;
+
+  const unitCostA = pA / normA;
+  const unitCostB = pB / normB;
+
+  const unitLabel = (uA === 'ml' || uA === 'l') ? 'ml' : ((uA === 'gr' || uA === 'kg') ? 'gram' : 'pcs');
+
+  costAEl.innerHTML = `Harga: <strong class="text-white">Rp ${(unitCostA * 100).toFixed(1)}</strong> / 100${unitLabel}`;
+  costBEl.innerHTML = `Harga: <strong class="text-white">Rp ${(unitCostB * 100).toFixed(1)}</strong> / 100${unitLabel}`;
+
+  if (Math.abs(unitCostA - unitCostB) < 0.0001) {
+    titleEl.textContent = '🤝 Keduanya Sama Murahnya!';
+    descEl.textContent = 'Nilai harga per satuan ukuran kedua produk bernilai persis sama.';
+    boxEl.className = 'p-4 rounded-xl bg-slate-900 border border-slate-700 text-center space-y-1';
+  } else if (unitCostA < unitCostB) {
+    const savingPct = Math.round(((unitCostB - unitCostA) / unitCostB) * 100);
+    titleEl.innerHTML = `<span class="text-brand-400 font-extrabold text-base">🎉 PRODUK A JAUH LEBIH HEMAT!</span>`;
+    descEl.textContent = `Produk A menghemat pengeluaran sekitar ${savingPct}% dibanding Produk B.`;
+    boxEl.className = 'p-4 rounded-xl bg-brand-950/40 border border-brand-500/50 text-center space-y-1';
+  } else {
+    const savingPct = Math.round(((unitCostA - unitCostB) / unitCostA) * 100);
+    titleEl.innerHTML = `<span class="text-teal-400 font-extrabold text-base">🎉 PRODUK B JAUH LEBIH HEMAT!</span>`;
+    descEl.textContent = `Produk B menghemat pengeluaran sekitar ${savingPct}% dibanding Produk A.`;
+    boxEl.className = 'p-4 rounded-xl bg-teal-950/40 border border-teal-500/50 text-center space-y-1';
+  }
+}
+
+// ==========================================
+// TOOL 18: PENCARI BARANG TERMURAH DI OLSHOP
+// ==========================================
+function getOlshopUrl(marketplace, keyword, cheapest) {
+  const q = encodeURIComponent(keyword.trim());
+  if (marketplace === 'shopee') {
+    return cheapest 
+      ? `https://shopee.co.id/search?keyword=${q}&sortBy=price&order=asc` 
+      : `https://shopee.co.id/search?keyword=${q}`;
+  } else if (marketplace === 'tokopedia') {
+    return cheapest 
+      ? `https://www.tokopedia.com/search?q=${q}&ob=3` 
+      : `https://www.tokopedia.com/search?q=${q}`;
+  } else if (marketplace === 'blibli') {
+    return cheapest 
+      ? `https://www.blibli.com/backend/search/products?searchTerm=${q}&sort=3` 
+      : `https://www.blibli.com/backend/search/products?searchTerm=${q}`;
+  } else if (marketplace === 'lazada') {
+    return cheapest 
+      ? `https://www.lazada.co.id/catalog/?q=${q}&sort=priceasc` 
+      : `https://www.lazada.co.id/catalog/?q=${q}`;
+  }
+  return '#';
+}
+
+function openOlshopSearch(marketplace) {
+  const keyword = document.getElementById('olshop-keyword').value.trim();
+  if (!keyword) {
+    alert('Ketik nama barang yang mau dicari terlebih dahulu.');
+    return;
+  }
+  const cheapest = document.getElementById('olshop-sort-cheapest').checked;
+  const url = getOlshopUrl(marketplace, keyword, cheapest);
+  window.open(url, '_blank');
+}
+
+function openAllOlshopTabs() {
+  const keyword = document.getElementById('olshop-keyword').value.trim();
+  if (!keyword) {
+    alert('Ketik nama barang yang mau dicari terlebih dahulu.');
+    return;
+  }
+  const cheapest = document.getElementById('olshop-sort-cheapest').checked;
+  ['tokopedia', 'shopee', 'blibli', 'lazada'].forEach(mp => {
+    window.open(getOlshopUrl(mp, keyword, cheapest), '_blank');
+  });
 }
