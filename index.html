@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     tailwind.config = {
@@ -139,6 +140,48 @@
               <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400">Konversi</span>
               <h3 class="text-base font-bold text-white mt-1">Foto / Scan ke PDF</h3>
               <p class="text-xs text-slate-400 mt-1">Ubah foto KTP, struk, atau dokumen jadi file PDF standar ukuran A4.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 9: Pisah Halaman PDF -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-split-pdf')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+              <i data-lucide="scissors" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-400">Pisah Halaman</span>
+              <h3 class="text-base font-bold text-white mt-1">Pisah / Potong PDF</h3>
+              <p class="text-xs text-slate-400 mt-1">Ambil halaman tertentu (misal: 1-3, 5) atau hapus halaman yang tidak perlu.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 10: Kompres Dokumen PDF -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-compress-pdf')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <i data-lucide="file-archive" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Hemat Kuota</span>
+              <h3 class="text-base font-bold text-white mt-1">Kompres Dokumen PDF</h3>
+              <p class="text-xs text-slate-400 mt-1">Kecilkan ukuran file PDF dokumen secara drastis tanpa kirim berkas ke server.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 11: Ekstrak Teks & Data PDF -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-extract-pdf')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+              <i data-lucide="file-search" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-sky-500/10 text-sky-400">Salin Isi</span>
+              <h3 class="text-base font-bold text-white mt-1">Ekstrak Teks & Data PDF</h3>
+              <p class="text-xs text-slate-400 mt-1">Sedot semua ketikan teks dari PDF ke Word / teks biasa tanpa ketik ulang.</p>
             </div>
           </div>
         </div>
@@ -522,6 +565,163 @@
           <button onclick="copyTransformedText()" class="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
             <i data-lucide="copy" class="w-4 h-4"></i> Salin Teks ke Clipboard
           </button>
+        </div>
+      </section>
+
+      <!-- TOOL: Pisah Halaman PDF -->
+      <section id="tool-split-pdf" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Pisah / Potong Halaman PDF</h2>
+          <p class="text-xs text-slate-400 mt-1">Ambil halaman tertentu atau pecah berkas PDF sesuai kebutuhan.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-split-pdf" class="border-2 border-dashed border-slate-700 hover:border-teal-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="scissors" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Klik atau geser file PDF ke sini</p>
+            <p class="text-xs text-slate-500 mt-1">Mendukung semua berkas PDF standar</p>
+            <input type="file" id="input-split-pdf" accept="application/pdf" class="hidden">
+          </div>
+
+          <div id="box-split-controls" class="hidden space-y-4 pt-2">
+            <div class="p-3 bg-slate-800 rounded-xl text-xs flex items-center justify-between">
+              <span class="truncate font-medium text-slate-200" id="split-pdf-name">-</span>
+              <span class="text-brand-400 font-bold" id="split-pdf-pages">Total: 0 Halaman</span>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-1">Ketik Halaman yang Ingin Diambil:</label>
+              <input type="text" id="input-split-range" placeholder="Contoh: 1-3, 5 (halaman 1 sampai 3, dan halaman 5)" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:border-teal-500 focus:outline-none">
+            </div>
+
+            <div class="flex gap-2 text-xs">
+              <button onclick="setSplitPreset('odd')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">Halaman Ganjil (1, 3, 5...)</button>
+              <button onclick="setSplitPreset('even')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">Halaman Genap (2, 4, 6...)</button>
+              <button onclick="setSplitPreset('first')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">Halaman 1 Saja</button>
+            </div>
+
+            <button id="btn-run-split-pdf" onclick="executeSplitPdf()" class="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+              <i data-lucide="scissors" class="w-4 h-4"></i> Pisahkan & Download PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Kompres Dokumen PDF -->
+      <section id="tool-compress-pdf" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Kompres Dokumen PDF</h2>
+          <p class="text-xs text-slate-400 mt-1">Kecilkan ukuran file PDF dokumen secara drastis tanpa kirim berkas ke server.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-compress-pdf" class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="file-archive" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih Berkas PDF yang Mau Dikecilkan</p>
+            <p class="text-xs text-slate-500 mt-1">Bebas kuota, tanpa batas halaman</p>
+            <input type="file" id="input-compress-pdf" accept="application/pdf" class="hidden">
+          </div>
+
+          <div id="box-compress-pdf-controls" class="hidden space-y-4 pt-2">
+            <div class="p-3 bg-slate-800 rounded-xl text-xs flex items-center justify-between">
+              <span class="truncate font-medium text-slate-200" id="comp-pdf-name">-</span>
+              <span class="text-slate-400" id="comp-pdf-orig-size">Ukuran: 0 KB</span>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-2">Tingkat Kompresi:</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="setPdfCompressPreset('low')" id="btn-comp-preset-low" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition text-center">
+                  <div class="font-bold text-white">Standar</div>
+                  <div class="text-[10px] text-slate-400">Kualitas Tajam</div>
+                </button>
+                <button onclick="setPdfCompressPreset('med')" id="btn-comp-preset-med" class="p-2.5 rounded-lg bg-emerald-600 text-xs font-medium text-white transition text-center border border-emerald-400">
+                  <div class="font-bold">Rekomendasi</div>
+                  <div class="text-[10px] text-emerald-100">Seimbang & Pas</div>
+                </button>
+                <button onclick="setPdfCompressPreset('high')" id="btn-comp-preset-high" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition text-center">
+                  <div class="font-bold text-white">Maksimal</div>
+                  <div class="text-[10px] text-slate-400">Ukuran Terkecil</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div id="compress-pdf-progress-box" class="hidden space-y-2">
+              <div class="flex justify-between text-xs text-slate-400">
+                <span id="compress-pdf-status">Mengompres dokumen...</span>
+                <span id="compress-pdf-percent">0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div id="compress-pdf-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Result -->
+            <div id="result-compress-pdf" class="hidden p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-400">Ukuran Sebelum: <strong id="res-comp-orig" class="text-slate-200">-</strong></span>
+                <span class="text-slate-400">Ukuran Baru: <strong id="res-comp-new" class="text-emerald-400 font-bold">-</strong></span>
+              </div>
+              <div class="text-xs text-brand-400 font-medium" id="res-comp-saving">Hemat: 0%</div>
+              <button id="btn-dl-compress-pdf" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+                <i data-lucide="download" class="w-4 h-4"></i> Download PDF Terkompres
+              </button>
+            </div>
+
+            <button id="btn-start-compress-pdf" onclick="executeCompressPdf()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+              <i data-lucide="file-archive" class="w-4 h-4"></i> Mulai Kompres PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Ekstrak Teks & Data PDF -->
+      <section id="tool-extract-pdf" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Ekstrak Teks & Data PDF</h2>
+          <p class="text-xs text-slate-400 mt-1">Salin semua isi ketikan teks dari berkas PDF ke teks atau Word tanpa ngetik manual.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-extract-pdf" class="border-2 border-dashed border-slate-700 hover:border-sky-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="file-search" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih Berkas PDF untuk Diekstrak</p>
+            <p class="text-xs text-slate-500 mt-1">Membaca teks per halaman secara otomatis</p>
+            <input type="file" id="input-extract-pdf" accept="application/pdf" class="hidden">
+          </div>
+
+          <div id="extract-pdf-progress-box" class="hidden space-y-2">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span id="extract-pdf-status">Mengekstrak teks...</span>
+              <span id="extract-pdf-percent">0%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div id="extract-pdf-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div id="result-extract-pdf" class="hidden space-y-4">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span id="stat-extract-pages">Halaman: 0</span>
+              <span id="stat-extract-words">Kata: 0</span>
+              <span id="stat-extract-chars">Karakter: 0</span>
+            </div>
+
+            <textarea id="output-extracted-text" rows="8" readonly class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 font-mono text-xs focus:outline-none"></textarea>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button onclick="copyExtractedText()" class="py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="copy" class="w-4 h-4"></i> Salin Semua Teks
+              </button>
+              <button onclick="downloadExtractedTxt()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="file-text" class="w-4 h-4"></i> Download (.TXT)
+              </button>
+              <button onclick="downloadExtractedDoc()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="file" class="w-4 h-4"></i> Download (.DOC)
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 

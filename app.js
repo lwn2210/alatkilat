@@ -79,12 +79,20 @@ function setupSearch() {
   });
 }
 
+// Initialize PDF.js worker if available
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
 // Global Drag & Drop Helper
 function setupDragAndDrop() {
   bindDrop('drop-compress-img', 'input-compress-img', handleCompressImageUpload);
   bindDrop('drop-pasfoto', 'input-pasfoto', handlePasfotoUpload);
   bindDrop('drop-merge-pdf', 'input-merge-pdf', handleMergePdfUpload);
   bindDrop('drop-img-pdf', 'input-img-pdf', handleImgToPdfUpload);
+  bindDrop('drop-split-pdf', 'input-split-pdf', handleSplitPdfUpload);
+  bindDrop('drop-compress-pdf', 'input-compress-pdf', handleCompressPdfUpload);
+  bindDrop('drop-extract-pdf', 'input-extract-pdf', handleExtractPdfUpload);
 }
 
 function bindDrop(boxId, inputId, handler) {
@@ -693,4 +701,339 @@ function copyTransformedText() {
   navigator.clipboard.writeText(el.value).then(() => {
     alert('Teks berhasil disalin ke clipboard!');
   });
+}
+
+// ==========================================
+// TOOL 9: PISAH / POTONG PDF (SPLIT PDF)
+// ==========================================
+let splitPdfDoc = null;
+let splitPdfBuffer = null;
+let splitPdfTotalPages = 0;
+let splitPdfOriginalName = 'dokumen.pdf';
+
+async function handleSplitPdfUpload(files) {
+  const file = files[0];
+  if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
+
+  splitPdfOriginalName = file.name;
+  splitPdfBuffer = await file.arrayBuffer();
+
+  try {
+    splitPdfDoc = await PDFLib.PDFDocument.load(splitPdfBuffer);
+    splitPdfTotalPages = splitPdfDoc.getPageCount();
+
+    document.getElementById('split-pdf-name').textContent = file.name;
+    document.getElementById('split-pdf-pages').textContent = `Total: ${splitPdfTotalPages} Halaman`;
+    document.getElementById('box-split-controls').classList.remove('hidden');
+    document.getElementById('input-split-range').value = `1-${Math.min(splitPdfTotalPages, 3)}`;
+    lucide.createIcons();
+  } catch (err) {
+    alert('Gagal membaca PDF: ' + err.message);
+  }
+}
+
+function setSplitPreset(type) {
+  if (splitPdfTotalPages <= 0) return;
+  const input = document.getElementById('input-split-range');
+
+  if (type === 'first') {
+    input.value = '1';
+  } else if (type === 'odd') {
+    const odds = [];
+    for (let i = 1; i <= splitPdfTotalPages; i += 2) odds.push(i);
+    input.value = odds.join(', ');
+  } else if (type === 'even') {
+    const evens = [];
+    for (let i = 2; i <= splitPdfTotalPages; i += 2) evens.push(i);
+    input.value = evens.length > 0 ? evens.join(', ') : '1';
+  }
+}
+
+function parsePageRange(rangeStr, maxPages) {
+  const pages = new Set();
+  const parts = rangeStr.split(',');
+
+  for (let part of parts) {
+    part = part.trim();
+    if (!part) continue;
+
+    if (part.includes('-')) {
+      const [startStr, endStr] = part.split('-');
+      const start = parseInt(startStr, 10);
+      const end = parseInt(endStr, 10);
+      if (!isNaN(start) && !isNaN(end)) {
+        const min = Math.max(1, Math.min(start, end));
+        const max = Math.min(maxPages, Math.max(start, end));
+        for (let i = min; i <= max; i++) pages.add(i - 1); // 0-indexed
+      }
+    } else {
+      const num = parseInt(part, 10);
+      if (!isNaN(num) && num >= 1 && num <= maxPages) {
+        pages.add(num - 1); // 0-indexed
+      }
+    }
+  }
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
+async function executeSplitPdf() {
+  if (!splitPdfDoc) return;
+  const rangeStr = document.getElementById('input-split-range').value.trim();
+  const pageIndices = parsePageRange(rangeStr, splitPdfTotalPages);
+
+  if (pageIndices.length === 0) {
+    alert('Rentang halaman tidak valid atau di luar jumlah total halaman (' + splitPdfTotalPages + ').');
+    return;
+  }
+
+  const btn = document.getElementById('btn-run-split-pdf');
+  btn.disabled = true;
+  btn.textContent = 'Memisahkan halaman...';
+
+  try {
+    const newPdf = await PDFLib.PDFDocument.create();
+    const copiedPages = await newPdf.copyPages(splitPdfDoc, pageIndices);
+    copiedPages.forEach(p => newPdf.addPage(p));
+
+    const pdfBytes = await newPdf.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pisah-${rangeStr.replace(/[^a-zA-Z0-9-]/g, '_')}-${splitPdfOriginalName}`;
+    a.click();
+  } catch (err) {
+    alert('Gagal memisahkan PDF: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i data-lucide="scissors" class="w-4 h-4"></i> Pisahkan & Download PDF`;
+    lucide.createIcons();
+  }
+}
+
+// ==========================================
+// TOOL 10: KOMPRES DOKUMEN PDF
+// ==========================================
+let compressPdfFile = null;
+let compressPdfPreset = 'med'; // 'low', 'med', 'high'
+let compressedPdfBlob = null;
+
+function setPdfCompressPreset(preset) {
+  compressPdfPreset = preset;
+  const btnLow = document.getElementById('btn-comp-preset-low');
+  const btnMed = document.getElementById('btn-comp-preset-med');
+  const btnHigh = document.getElementById('btn-comp-preset-high');
+
+  [btnLow, btnMed, btnHigh].forEach(b => {
+    b.className = 'p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition text-center';
+  });
+
+  if (preset === 'low') {
+    btnLow.className = 'p-2.5 rounded-lg bg-emerald-600 text-xs font-medium text-white transition text-center border border-emerald-400';
+  } else if (preset === 'med') {
+    btnMed.className = 'p-2.5 rounded-lg bg-emerald-600 text-xs font-medium text-white transition text-center border border-emerald-400';
+  } else {
+    btnHigh.className = 'p-2.5 rounded-lg bg-emerald-600 text-xs font-medium text-white transition text-center border border-emerald-400';
+  }
+}
+
+function handleCompressPdfUpload(files) {
+  const file = files[0];
+  if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
+
+  compressPdfFile = file;
+  document.getElementById('comp-pdf-name').textContent = file.name;
+  document.getElementById('comp-pdf-orig-size').textContent = 'Ukuran: ' + formatBytes(file.size);
+  document.getElementById('box-compress-pdf-controls').classList.remove('hidden');
+  document.getElementById('result-compress-pdf').classList.add('hidden');
+  lucide.createIcons();
+}
+
+async function executeCompressPdf() {
+  if (!compressPdfFile || typeof pdfjsLib === 'undefined') {
+    alert('PDF viewer library belum siap, coba refresh halaman.');
+    return;
+  }
+
+  const startBtn = document.getElementById('btn-start-compress-pdf');
+  const progressBox = document.getElementById('compress-pdf-progress-box');
+  const progressBar = document.getElementById('compress-pdf-bar');
+  const progressStatus = document.getElementById('compress-pdf-status');
+  const progressPercent = document.getElementById('compress-pdf-percent');
+  const resultDiv = document.getElementById('result-compress-pdf');
+
+  startBtn.classList.add('hidden');
+  progressBox.classList.remove('hidden');
+  resultDiv.classList.add('hidden');
+
+  try {
+    const arrayBuffer = await compressPdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+
+    const outPdf = await PDFLib.PDFDocument.create();
+
+    // Scale and quality settings based on preset
+    let scale = 1.0;
+    let quality = 0.65;
+    if (compressPdfPreset === 'low') { scale = 1.25; quality = 0.82; }
+    if (compressPdfPreset === 'med') { scale = 0.95; quality = 0.65; }
+    if (compressPdfPreset === 'high') { scale = 0.75; quality = 0.45; }
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const pct = Math.round((pageNum / numPages) * 100);
+      progressBar.style.width = pct + '%';
+      progressPercent.textContent = pct + '%';
+      progressStatus.textContent = `Mengompres halaman ${pageNum} dari ${numPages}...`;
+
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: scale });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      const imgBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
+      const imgBuffer = await imgBlob.arrayBuffer();
+      const embeddedJpg = await outPdf.embedJpg(imgBuffer);
+
+      // Keep original aspect ratio in points
+      const origViewport = page.getViewport({ scale: 1.0 });
+      const outPage = outPdf.addPage([origViewport.width, origViewport.height]);
+      outPage.drawImage(embeddedJpg, {
+        x: 0,
+        y: 0,
+        width: origViewport.width,
+        height: origViewport.height,
+      });
+    }
+
+    const compressedBytes = await outPdf.save();
+    compressedPdfBlob = new Blob([compressedBytes], { type: 'application/pdf' });
+
+    progressBox.classList.add('hidden');
+    resultDiv.classList.remove('hidden');
+
+    const origSize = compressPdfFile.size;
+    const newSize = compressedPdfBlob.size;
+    document.getElementById('res-comp-orig').textContent = formatBytes(origSize);
+    document.getElementById('res-comp-new').textContent = formatBytes(newSize);
+
+    const savingPct = Math.round(((origSize - newSize) / origSize) * 100);
+    const savingEl = document.getElementById('res-comp-saving');
+    if (savingPct > 0) {
+      savingEl.textContent = `Berhasil menghemat: ${savingPct}% ukuran berkas! 🎉`;
+      savingEl.className = 'text-xs text-brand-400 font-bold';
+    } else {
+      savingEl.textContent = 'Ukuran berkas sudah optimal.';
+      savingEl.className = 'text-xs text-slate-400 font-medium';
+    }
+
+    document.getElementById('btn-dl-compress-pdf').onclick = () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(compressedPdfBlob);
+      a.download = `kompres-${compressPdfFile.name}`;
+      a.click();
+    };
+
+    lucide.createIcons();
+  } catch (err) {
+    alert('Gagal mengompres PDF: ' + err.message);
+    startBtn.classList.remove('hidden');
+    progressBox.classList.add('hidden');
+  }
+}
+
+// ==========================================
+// TOOL 11: EKSTRAK TEKS & DATA PDF
+// ==========================================
+let currentExtractedText = '';
+
+async function handleExtractPdfUpload(files) {
+  const file = files[0];
+  if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
+
+  const progressBox = document.getElementById('extract-pdf-progress-box');
+  const progressBar = document.getElementById('extract-pdf-bar');
+  const progressStatus = document.getElementById('extract-pdf-status');
+  const progressPercent = document.getElementById('extract-pdf-percent');
+  const resultDiv = document.getElementById('result-extract-pdf');
+  const outputArea = document.getElementById('output-extracted-text');
+
+  progressBox.classList.remove('hidden');
+  resultDiv.classList.add('hidden');
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+
+    let fullText = '';
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const pct = Math.round((pageNum / numPages) * 100);
+      progressBar.style.width = pct + '%';
+      progressPercent.textContent = pct + '%';
+      progressStatus.textContent = `Mengekstrak halaman ${pageNum} dari ${numPages}...`;
+
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+
+      fullText += `--- [ Halaman ${pageNum} ] ---\n` + pageText.trim() + '\n\n';
+    }
+
+    currentExtractedText = fullText.trim();
+    outputArea.value = currentExtractedText;
+
+    // Calculate stats
+    const words = currentExtractedText ? currentExtractedText.split(/\s+/).length : 0;
+    const chars = currentExtractedText.length;
+
+    document.getElementById('stat-extract-pages').textContent = `Halaman: ${numPages}`;
+    document.getElementById('stat-extract-words').textContent = `Kata: ${words.toLocaleString('id-ID')}`;
+    document.getElementById('stat-extract-chars').textContent = `Karakter: ${chars.toLocaleString('id-ID')}`;
+
+    progressBox.classList.add('hidden');
+    resultDiv.classList.remove('hidden');
+    lucide.createIcons();
+  } catch (err) {
+    alert('Gagal mengekstrak teks dari PDF: ' + err.message);
+    progressBox.classList.add('hidden');
+  }
+}
+
+function copyExtractedText() {
+  if (!currentExtractedText) return;
+  navigator.clipboard.writeText(currentExtractedText).then(() => {
+    alert('Seluruh teks berhasil disalin ke clipboard!');
+  });
+}
+
+function downloadExtractedTxt() {
+  if (!currentExtractedText) return;
+  const blob = new Blob([currentExtractedText], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ekstrak-teks-${Date.now()}.txt`;
+  a.click();
+}
+
+function downloadExtractedDoc() {
+  if (!currentExtractedText) return;
+  const htmlContent = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'><title>Hasil Ekstrak Dokumen</title></head>
+    <body style="font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.5;">
+      ${currentExtractedText.replace(/\n\n/g, '<p></p>').replace(/\n/g, '<br/>')}
+    </body>
+    </html>
+  `;
+  const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ekstrak-dokumen-${Date.now()}.doc`;
+  a.click();
 }
