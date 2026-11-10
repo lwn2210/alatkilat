@@ -78,11 +78,13 @@
 
       <!-- Category Filter Pills -->
       <div class="flex items-center justify-center gap-2 flex-wrap">
-        <button onclick="filterCategory('all')" class="cat-pill active px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-brand-500 text-white transition">Semua</button>
-        <button onclick="filterCategory('photo')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">📸 Foto & Gambar</button>
-        <button onclick="filterCategory('pdf')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">📄 Dokumen & PDF</button>
-        <button onclick="filterCategory('finance')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">💰 Finansial & Bisnis</button>
-        <button onclick="filterCategory('util')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">⚡ Utilitas & QR</button>
+        <button onclick="filterCategory('all')" class="cat-pill active px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-brand-500 text-white transition">Semua</button>
+        <button onclick="filterCategory('photo')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">📸 Foto & Gambar</button>
+        <button onclick="filterCategory('pdf')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">📄 Dokumen & PDF</button>
+        <button onclick="filterCategory('audio')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">🎵 Audio & Suara</button>
+        <button onclick="filterCategory('dev')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">💻 Koding & Dev</button>
+        <button onclick="filterCategory('finance')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">💰 Finansial & Bisnis</button>
+        <button onclick="filterCategory('util')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">⚡ Utilitas & Teks</button>
       </div>
 
       <!-- Tools Grid -->
@@ -238,6 +240,48 @@
               <span class="text-xs font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-400">Teks</span>
               <h3 class="text-base font-bold text-white mt-1">Pengubah Huruf & Karakter</h3>
               <p class="text-xs text-slate-400 mt-1">Ubah huruf besar, kecil, kapital awal kata, hitung jumlah kata dan karakter.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 12: Pemotong Audio / Trimmer -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="audio" onclick="switchView('tool-audio-trimmer')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+              <i data-lucide="music-2" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-violet-500/10 text-violet-400">Web Audio</span>
+              <h3 class="text-base font-bold text-white mt-1">Pemotong Lagu & Audio</h3>
+              <p class="text-xs text-slate-400 mt-1">Potong detik audio MP3/WAV visual langsung di browser untuk ringtone atau video.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 13: JSON Formatter & Beautifier -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="dev" onclick="switchView('tool-json-beautifier')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <i data-lucide="braces" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Dev Tool</span>
+              <h3 class="text-base font-bold text-white mt-1">JSON Formatter & Validator</h3>
+              <p class="text-xs text-slate-400 mt-1">Ratakan, validasi syntax error, minify, dan copy data JSON dalam hitungan detik.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 14: Hash & Encoder Tester -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="dev" onclick="switchView('tool-crypto-hash')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20">
+              <i data-lucide="key-round" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-orange-500/10 text-orange-400">Security & Dev</span>
+              <h3 class="text-base font-bold text-white mt-1">Hash & Encoder Tester</h3>
+              <p class="text-xs text-slate-400 mt-1">Generate SHA-256, SHA-512, MD5, Base64 & URL Encode/Decode instan client-side.</p>
             </div>
           </div>
         </div>
@@ -720,6 +764,190 @@
               <button onclick="downloadExtractedDoc()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
                 <i data-lucide="file" class="w-4 h-4"></i> Download (.DOC)
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Pemotong Audio / Trimmer -->
+      <section id="tool-audio-trimmer" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Pemotong Lagu & Audio (Audio Trimmer)</h2>
+          <p class="text-xs text-slate-400 mt-1">Potong detik audio MP3 atau WAV visual langsung di browsermu tanpa upload.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-audio-trimmer" class="border-2 border-dashed border-slate-700 hover:border-violet-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="music-2" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih Berkas Audio (MP3, WAV, OGG, M4A)</p>
+            <p class="text-xs text-slate-500 mt-1">Audio diproses lokal menggunakan Web Audio API</p>
+            <input type="file" id="input-audio-trimmer" accept="audio/*" class="hidden">
+          </div>
+
+          <div id="box-audio-controls" class="hidden space-y-4 pt-2">
+            <div class="p-3 bg-slate-800 rounded-xl text-xs flex items-center justify-between">
+              <span class="truncate font-medium text-slate-200" id="audio-file-name">-</span>
+              <span class="text-violet-400 font-bold" id="audio-duration-info">Durasi: 00:00</span>
+            </div>
+
+            <!-- Waveform Canvas -->
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 relative">
+              <canvas id="canvas-waveform" class="w-full h-24 block rounded"></canvas>
+            </div>
+
+            <!-- Range inputs -->
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="font-semibold text-slate-300 block mb-1">Mulai Dari (Detik):</label>
+                <input type="number" id="audio-start-time" step="0.1" min="0" value="0" oninput="updateAudioTrimInputs()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+              </div>
+              <div>
+                <label class="font-semibold text-slate-300 block mb-1">Selesai Pada (Detik):</label>
+                <input type="number" id="audio-end-time" step="0.1" min="0" value="30" oninput="updateAudioTrimInputs()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button id="btn-play-audio-selection" onclick="togglePlayAudioSelection()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
+                <i data-lucide="play" class="w-4 h-4"></i> Putar Pilihan
+              </button>
+              <button onclick="executeDownloadTrimmedAudio()" class="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg transition">
+                <i data-lucide="download" class="w-4 h-4"></i> Download Hasil Potong (.WAV)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: JSON Formatter & Beautifier -->
+      <section id="tool-json-beautifier" class="tool-content hidden space-y-6 max-w-3xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">JSON Formatter, Minifier & Validator</h2>
+          <p class="text-xs text-slate-400 mt-1">Ratakan struktur JSON, deteksi syntax error, dan minify data secara instan.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div class="flex gap-2">
+              <button onclick="formatJson(2)" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition">Ratakan (2 Spasi)</button>
+              <button onclick="formatJson(4)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition">4 Spasi</button>
+              <button onclick="minifyJson()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition">Minify (1 Baris)</button>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="loadSampleJson()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">Contoh JSON</button>
+              <button onclick="clearJson()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 transition">Hapus</button>
+            </div>
+          </div>
+
+          <textarea id="input-json-editor" rows="12" placeholder='Tempelkan JSON di sini... (cth: {"nama": "AlatKilat", "status": true})' oninput="validateJsonLive()" class="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-emerald-400 font-mono text-xs focus:border-emerald-500 focus:outline-none leading-relaxed"></textarea>
+
+          <div id="json-status-box" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs flex items-center justify-between">
+            <span id="json-status-text" class="text-slate-400">Siap menerima kode JSON.</span>
+            <span id="json-stats-text" class="text-slate-500 font-mono text-[11px]">0 Bytes</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="copyJsonText()" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
+              <i data-lucide="copy" class="w-4 h-4"></i> Salin JSON
+            </button>
+            <button onclick="downloadJsonFile()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg transition">
+              <i data-lucide="download" class="w-4 h-4"></i> Download File (.json)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Hash & Encoder Tester -->
+      <section id="tool-crypto-hash" class="tool-content hidden space-y-6 max-w-3xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Hash Generator & Encoder Tester</h2>
+          <p class="text-xs text-slate-400 mt-1">Hitung hash SHA-256, SHA-512, MD5, serta Base64 & URL Encode/Decode real-time.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1">Ketik / Tempel Teks Sumber:</label>
+            <textarea id="input-crypto-text" rows="3" placeholder="Ketik kata sandi, token, atau teks apa saja di sini..." oninput="calculateCryptoHashes()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:border-orange-500 focus:outline-none"></textarea>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <!-- SHA-256 -->
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 text-xs">
+              <div class="flex-1 truncate">
+                <span class="text-orange-400 font-bold block mb-0.5 text-[10px]">SHA-256 HASH</span>
+                <span id="hash-sha256" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+              </div>
+              <button onclick="copyHashResult('hash-sha256')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- SHA-512 -->
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 text-xs">
+              <div class="flex-1 truncate">
+                <span class="text-purple-400 font-bold block mb-0.5 text-[10px]">SHA-512 HASH</span>
+                <span id="hash-sha512" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+              </div>
+              <button onclick="copyHashResult('hash-sha512')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- MD5 -->
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 text-xs">
+              <div class="flex-1 truncate">
+                <span class="text-pink-400 font-bold block mb-0.5 text-[10px]">MD5 HASH</span>
+                <span id="hash-md5" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+              </div>
+              <button onclick="copyHashResult('hash-md5')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Base64 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+                <div class="flex-1 truncate">
+                  <span class="text-cyan-400 font-bold block mb-0.5 text-[10px]">BASE64 ENCODE</span>
+                  <span id="hash-b64-enc" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+                </div>
+                <button onclick="copyHashResult('hash-b64-enc')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+                <div class="flex-1 truncate">
+                  <span class="text-teal-400 font-bold block mb-0.5 text-[10px]">BASE64 DECODE</span>
+                  <span id="hash-b64-dec" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+                </div>
+                <button onclick="copyHashResult('hash-b64-dec')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- URL Encode / Decode -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+                <div class="flex-1 truncate">
+                  <span class="text-amber-400 font-bold block mb-0.5 text-[10px]">URL ENCODE</span>
+                  <span id="hash-url-enc" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+                </div>
+                <button onclick="copyHashResult('hash-url-enc')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+                <div class="flex-1 truncate">
+                  <span class="text-lime-400 font-bold block mb-0.5 text-[10px]">URL DECODE</span>
+                  <span id="hash-url-dec" class="font-mono text-slate-300 truncate block text-[11px] select-all">-</span>
+                </div>
+                <button onclick="copyHashResult('hash-url-dec')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -93,6 +93,7 @@ function setupDragAndDrop() {
   bindDrop('drop-split-pdf', 'input-split-pdf', handleSplitPdfUpload);
   bindDrop('drop-compress-pdf', 'input-compress-pdf', handleCompressPdfUpload);
   bindDrop('drop-extract-pdf', 'input-extract-pdf', handleExtractPdfUpload);
+  bindDrop('drop-audio-trimmer', 'input-audio-trimmer', handleAudioUpload);
 }
 
 function bindDrop(boxId, inputId, handler) {
@@ -1036,4 +1037,492 @@ function downloadExtractedDoc() {
   a.href = URL.createObjectURL(blob);
   a.download = `ekstrak-dokumen-${Date.now()}.doc`;
   a.click();
+}
+
+// ==========================================
+// TOOL 12: PEMOTONG AUDIO (AUDIO TRIMMER)
+// ==========================================
+let audioContext = null;
+let currentAudioBuffer = null;
+let currentAudioSource = null;
+let isAudioPlaying = false;
+let audioOriginalFileName = 'audio.mp3';
+
+function getAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioContext;
+}
+
+async function handleAudioUpload(files) {
+  const file = files[0];
+  if (!file || !file.type.startsWith('audio/')) return;
+
+  audioOriginalFileName = file.name;
+  const ctx = getAudioContext();
+  const arrayBuffer = await file.arrayBuffer();
+
+  try {
+    currentAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    const duration = currentAudioBuffer.duration;
+
+    document.getElementById('audio-file-name').textContent = file.name;
+    document.getElementById('audio-duration-info').textContent = 'Durasi: ' + formatAudioDuration(duration);
+    document.getElementById('audio-start-time').value = '0';
+    document.getElementById('audio-end-time').value = Math.min(30, Math.floor(duration)).toString();
+    document.getElementById('audio-end-time').max = duration.toFixed(1);
+
+    document.getElementById('box-audio-controls').classList.remove('hidden');
+    drawAudioWaveform(currentAudioBuffer);
+    lucide.createIcons();
+  } catch (err) {
+    alert('Gagal memproses berkas audio: ' + err.message);
+  }
+}
+
+function formatAudioDuration(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function drawAudioWaveform(buffer) {
+  const canvas = document.getElementById('canvas-waveform');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width = canvas.parentElement.clientWidth || 600;
+  const height = canvas.height = 96;
+
+  ctx.fillStyle = '#020617';
+  ctx.fillRect(0, 0, width, height);
+
+  const rawData = buffer.getChannelData(0);
+  const step = Math.ceil(rawData.length / width);
+  const amp = height / 2;
+
+  ctx.fillStyle = '#8b5cf6';
+  for (let i = 0; i < width; i++) {
+    let min = 1.0;
+    let max = -1.0;
+    for (let j = 0; j < step; j++) {
+      const datum = rawData[(i * step) + j];
+      if (datum < min) min = datum;
+      if (datum > max) max = datum;
+    }
+    const yTop = (1 + min) * amp;
+    const yBottom = Math.max(1, (max - min) * amp);
+    ctx.fillRect(i, yTop, 1, yBottom);
+  }
+}
+
+function updateAudioTrimInputs() {
+  if (!currentAudioBuffer) return;
+  const max = currentAudioBuffer.duration;
+  let start = parseFloat(document.getElementById('audio-start-time').value) || 0;
+  let end = parseFloat(document.getElementById('audio-end-time').value) || 0;
+
+  if (start < 0) start = 0;
+  if (start >= max) start = max - 0.5;
+  if (end <= start) end = start + 1;
+  if (end > max) end = max;
+
+  document.getElementById('audio-start-time').value = start.toFixed(1);
+  document.getElementById('audio-end-time').value = end.toFixed(1);
+}
+
+function togglePlayAudioSelection() {
+  if (!currentAudioBuffer) return;
+  const ctx = getAudioContext();
+  const btn = document.getElementById('btn-play-audio-selection');
+
+  if (isAudioPlaying) {
+    if (currentAudioSource) {
+      currentAudioSource.stop();
+      currentAudioSource = null;
+    }
+    isAudioPlaying = false;
+    btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Putar Pilihan`;
+    lucide.createIcons();
+    return;
+  }
+
+  const start = parseFloat(document.getElementById('audio-start-time').value) || 0;
+  const end = parseFloat(document.getElementById('audio-end-time').value) || currentAudioBuffer.duration;
+  const duration = Math.max(0.1, end - start);
+
+  currentAudioSource = ctx.createBufferSource();
+  currentAudioSource.buffer = currentAudioBuffer;
+  currentAudioSource.connect(ctx.destination);
+  currentAudioSource.start(0, start, duration);
+
+  isAudioPlaying = true;
+  btn.innerHTML = `<i data-lucide="square" class="w-4 h-4"></i> Hentikan`;
+  lucide.createIcons();
+
+  currentAudioSource.onended = () => {
+    isAudioPlaying = false;
+    btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Putar Pilihan`;
+    lucide.createIcons();
+  };
+}
+
+function executeDownloadTrimmedAudio() {
+  if (!currentAudioBuffer) return;
+  const start = parseFloat(document.getElementById('audio-start-time').value) || 0;
+  const end = parseFloat(document.getElementById('audio-end-time').value) || currentAudioBuffer.duration;
+  const sampleRate = currentAudioBuffer.sampleRate;
+  const startOffset = Math.floor(start * sampleRate);
+  const endOffset = Math.floor(end * sampleRate);
+  const frameCount = Math.max(1, endOffset - startOffset);
+
+  const ctx = getAudioContext();
+  const numChannels = currentAudioBuffer.numberOfChannels;
+  const trimmed = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+  for (let c = 0; c < numChannels; c++) {
+    const src = currentAudioBuffer.getChannelData(c);
+    const dest = trimmed.getChannelData(c);
+    for (let i = 0; i < frameCount; i++) {
+      dest[i] = src[startOffset + i] || 0;
+    }
+  }
+
+  const wavBlob = audioBufferToWavBlob(trimmed);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(wavBlob);
+  a.download = `potongan-${audioOriginalFileName.replace(/\.[^/.]+$/, '')}.wav`;
+  a.click();
+}
+
+function audioBufferToWavBlob(buffer) {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+
+  const dataLength = buffer.length * blockAlign;
+  const bufferLength = 44 + dataLength;
+  const arrayBuffer = new ArrayBuffer(bufferLength);
+  const view = new DataView(arrayBuffer);
+
+  const writeString = (offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataLength, true);
+
+  // Interleave audio channels
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      let sample = buffer.getChannelData(c)[i];
+      sample = Math.max(-1, Math.min(1, sample));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+// ==========================================
+// TOOL 13: JSON FORMATTER & VALIDATOR
+// ==========================================
+function validateJsonLive() {
+  const editor = document.getElementById('input-json-editor');
+  const statusText = document.getElementById('json-status-text');
+  const statsText = document.getElementById('json-stats-text');
+  const val = editor.value.trim();
+
+  statsText.textContent = `${editor.value.length} Karakter`;
+
+  if (!val) {
+    statusText.textContent = 'Siap menerima data JSON.';
+    statusText.className = 'text-slate-400';
+    return;
+  }
+
+  try {
+    JSON.parse(val);
+    statusText.textContent = '✓ JSON Valid & Siap Digunakan';
+    statusText.className = 'text-emerald-400 font-semibold';
+  } catch (err) {
+    statusText.textContent = '✕ ' + err.message;
+    statusText.className = 'text-rose-400 font-semibold';
+  }
+}
+
+function formatJson(spaces = 2) {
+  const editor = document.getElementById('input-json-editor');
+  try {
+    const obj = JSON.parse(editor.value);
+    editor.value = JSON.stringify(obj, null, spaces);
+    validateJsonLive();
+  } catch (err) {
+    alert('JSON tidak valid: ' + err.message);
+  }
+}
+
+function minifyJson() {
+  const editor = document.getElementById('input-json-editor');
+  try {
+    const obj = JSON.parse(editor.value);
+    editor.value = JSON.stringify(obj);
+    validateJsonLive();
+  } catch (err) {
+    alert('JSON tidak valid: ' + err.message);
+  }
+}
+
+function loadSampleJson() {
+  const sample = {
+    "project": "AlatKilat",
+    "version": "1.2.0",
+    "clientSide": true,
+    "tools": [
+      { "id": 1, "name": "Kompres Foto", "category": "photo" },
+      { "id": 2, "name": "Split & Merge PDF", "category": "pdf" },
+      { "id": 3, "name": "Audio Trimmer", "category": "audio" },
+      { "id": 4, "name": "JSON Beautifier", "category": "dev" }
+    ],
+    "author": { "name": "Samudra", "role": "Owner" }
+  };
+  const editor = document.getElementById('input-json-editor');
+  editor.value = JSON.stringify(sample, null, 2);
+  validateJsonLive();
+}
+
+function clearJson() {
+  const editor = document.getElementById('input-json-editor');
+  editor.value = '';
+  validateJsonLive();
+}
+
+function copyJsonText() {
+  const editor = document.getElementById('input-json-editor');
+  if (!editor.value) return;
+  navigator.clipboard.writeText(editor.value).then(() => {
+    alert('Kode JSON berhasil disalin ke clipboard!');
+  });
+}
+
+function downloadJsonFile() {
+  const editor = document.getElementById('input-json-editor');
+  if (!editor.value) return;
+  const blob = new Blob([editor.value], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `data-${Date.now()}.json`;
+  a.click();
+}
+
+// ==========================================
+// TOOL 14: HASH GENERATOR & ENCODER TESTER
+// ==========================================
+async function calculateCryptoHashes() {
+  const input = document.getElementById('input-crypto-text').value;
+
+  if (!input) {
+    document.getElementById('hash-sha256').textContent = '-';
+    document.getElementById('hash-sha512').textContent = '-';
+    document.getElementById('hash-md5').textContent = '-';
+    document.getElementById('hash-b64-enc').textContent = '-';
+    document.getElementById('hash-b64-dec').textContent = '-';
+    document.getElementById('hash-url-enc').textContent = '-';
+    document.getElementById('hash-url-dec').textContent = '-';
+    return;
+  }
+
+  const enc = new TextEncoder();
+  const data = enc.encode(input);
+
+  // SHA-256
+  const sha256Buf = await crypto.subtle.digest('SHA-256', data);
+  document.getElementById('hash-sha256').textContent = bufferToHex(sha256Buf);
+
+  // SHA-512
+  const sha512Buf = await crypto.subtle.digest('SHA-512', data);
+  document.getElementById('hash-sha512').textContent = bufferToHex(sha512Buf);
+
+  // MD5
+  document.getElementById('hash-md5').textContent = calculateMD5(input);
+
+  // Base64
+  try {
+    document.getElementById('hash-b64-enc').textContent = btoa(unescape(encodeURIComponent(input)));
+  } catch (e) {
+    document.getElementById('hash-b64-enc').textContent = 'Error Encode';
+  }
+
+  try {
+    document.getElementById('hash-b64-dec').textContent = decodeURIComponent(escape(atob(input)));
+  } catch (e) {
+    document.getElementById('hash-b64-dec').textContent = '(Teks bukan Base64 valid)';
+  }
+
+  // URL Encode / Decode
+  document.getElementById('hash-url-enc').textContent = encodeURIComponent(input);
+  try {
+    document.getElementById('hash-url-dec').textContent = decodeURIComponent(input);
+  } catch (e) {
+    document.getElementById('hash-url-dec').textContent = '(Bukan format URL valid)';
+  }
+}
+
+function bufferToHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function copyHashResult(elementId) {
+  const text = document.getElementById(elementId).textContent;
+  if (!text || text === '-') return;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Hasil berhasil disalin ke clipboard!');
+  });
+}
+
+// Compact MD5 Implementation
+function calculateMD5(str) {
+  function md5cycle(x, k) {
+    var a = x[0], b = x[1], c = x[2], d = x[3];
+    a = ff(a, b, c, d, k[0], 7, -680876936);
+    d = ff(d, a, b, c, k[1], 12, -389564586);
+    c = ff(c, d, a, b, k[2], 17, 606105819);
+    b = ff(b, c, d, a, k[3], 22, -1044525330);
+    a = ff(a, b, c, d, k[4], 7, -176418897);
+    d = ff(d, a, b, c, k[5], 12, 1200080426);
+    c = ff(c, d, a, b, k[6], 17, -1473231341);
+    b = ff(b, c, d, a, k[7], 22, -45705983);
+    a = ff(a, b, c, d, k[8], 7, 1770035416);
+    d = ff(d, a, b, c, k[9], 12, -1958414417);
+    c = ff(c, d, a, b, k[10], 17, -42063);
+    b = ff(b, c, d, a, k[11], 22, -1990404162);
+    a = ff(a, b, c, d, k[12], 7, 1804603682);
+    d = ff(d, a, b, c, k[13], 12, -40341101);
+    c = ff(c, d, a, b, k[14], 17, -1502002290);
+    b = ff(b, c, d, a, k[15], 22, 1236535329);
+
+    a = gg(a, b, c, d, k[1], 5, -165796510);
+    d = gg(d, a, b, c, k[6], 9, -1069501632);
+    c = gg(c, d, a, b, k[11], 14, 643717713);
+    b = gg(b, c, d, a, k[0], 20, -373897302);
+    a = gg(a, b, c, d, k[5], 5, -701558691);
+    d = gg(d, a, b, c, k[10], 9, 38016083);
+    c = gg(c, d, a, b, k[15], 14, -660478335);
+    b = gg(b, c, d, a, k[4], 20, -405537848);
+    a = gg(a, b, c, d, k[9], 5, 568446438);
+    d = gg(d, a, b, c, k[14], 9, -1019803690);
+    c = gg(c, d, a, b, k[3], 14, -187363961);
+    b = gg(b, c, d, a, k[8], 20, 1163531501);
+    a = gg(a, b, c, d, k[13], 5, -1444681467);
+    d = gg(d, a, b, c, k[2], 9, -51403784);
+    c = gg(c, d, a, b, k[7], 14, 1735328473);
+    b = gg(b, c, d, a, k[12], 20, -1926607734);
+
+    a = hh(a, b, c, d, k[5], 4, -378558);
+    d = hh(d, a, b, c, k[8], 11, -2022574463);
+    c = hh(c, d, a, b, k[11], 16, 1839030562);
+    b = hh(b, c, d, a, k[14], 23, -35309556);
+    a = hh(a, b, c, d, k[1], 4, -1530992060);
+    d = hh(d, a, b, c, k[4], 11, 1272893353);
+    c = hh(c, d, a, b, k[7], 16, -155497632);
+    b = hh(b, c, d, a, k[10], 23, -1094730640);
+    a = hh(a, b, c, d, k[13], 4, 681279174);
+    d = hh(d, a, b, c, k[0], 11, -358537222);
+    c = hh(c, d, a, b, k[3], 16, -722521979);
+    b = hh(b, c, d, a, k[6], 23, 76029189);
+    a = hh(a, b, c, d, k[9], 4, -640364487);
+    d = hh(d, a, b, c, k[12], 11, -421815835);
+    c = hh(c, d, a, b, k[15], 16, 530742520);
+    b = hh(b, c, d, a, k[2], 23, -995338651);
+
+    a = ii(a, b, c, d, k[0], 6, -198630844);
+    d = ii(d, a, b, c, k[7], 10, 1126891415);
+    c = ii(c, d, a, b, k[14], 15, -1416354905);
+    b = ii(b, c, d, a, k[5], 21, -57434055);
+    a = ii(a, b, c, d, k[12], 6, 1700485571);
+    d = ii(d, a, b, c, k[3], 10, -1894986606);
+    c = ii(c, d, a, b, k[10], 15, -1051523);
+    b = ii(b, c, d, a, k[1], 21, -2054922799);
+    a = ii(a, b, c, d, k[8], 6, 1873313359);
+    d = ii(d, a, b, c, k[15], 10, -30611744);
+    c = ii(c, d, a, b, k[6], 15, -1560198380);
+    b = ii(b, c, d, a, k[13], 21, 1309151649);
+    a = ii(a, b, c, d, k[4], 6, -145523070);
+    d = ii(d, a, b, c, k[11], 10, -1120210379);
+    c = ii(c, d, a, b, k[2], 15, 718787259);
+    b = ii(b, c, d, a, k[9], 21, -343485551);
+
+    x[0] = add32(a, x[0]);
+    x[1] = add32(b, x[1]);
+    x[2] = add32(c, x[2]);
+    x[3] = add32(d, x[3]);
+  }
+
+  function cmn(q, a, b, x, s, t) {
+    a = add32(add32(a, q), add32(x, t));
+    return add32((a << s) | (a >>> (32 - s)), b);
+  }
+  function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((~b) & d), a, b, x, s, t); }
+  function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (~d)), a, b, x, s, t); }
+  function hh(a, b, c, d, x, s, t) { return cmn(b ^ c ^ d, a, b, x, s, t); }
+  function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (~d)), a, b, x, s, t); }
+
+  function add32(a, b) { return (a + b) & 0xFFFFFFFF; }
+
+  function md51(s) {
+    var n = s.length, state = [1732584193, -271733879, -1732584194, 271733878], i;
+    for (i = 64; i <= s.length; i += 64) {
+      md5cycle(state, md5blk(s.substring(i - 64, i)));
+    }
+    s = s.substring(i - 64);
+    var tail = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0];
+    for (i = 0; i < s.length; i++) tail[i >> 2] |= s.charCodeAt(i) << ((i % 4) << 3);
+    tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+    if (i > 55) {
+      md5cycle(state, tail);
+      for (i = 0; i < 16; i++) tail[i] = 0;
+    }
+    tail[14] = n * 8;
+    md5cycle(state, tail);
+    return state;
+  }
+
+  function md5blk(s) {
+    var md5blks = [], i;
+    for (i = 0; i < 64; i += 4) {
+      md5blks[i >> 2] = s.charCodeAt(i) + (s.charCodeAt(i + 1) << 8) + (s.charCodeAt(i + 2) << 16) + (s.charCodeAt(i + 3) << 24);
+    }
+    return md5blks;
+  }
+
+  var hex_chr = '0123456789abcdef'.split('');
+  function rhex(n) {
+    var s = '', j = 0;
+    for (; j < 4; j++) s += hex_chr[(n >> (j * 8 + 4)) & 0x0F] + hex_chr[(n >> (j * 8)) & 0x0F];
+    return s;
+  }
+
+  var output = md51(unescape(encodeURIComponent(str)));
+  return rhex(output[0]) + rhex(output[1]) + rhex(output[2]) + rhex(output[3]);
 }
