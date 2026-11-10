@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lwn2210.github.io/alatkilat/sitemap.xml

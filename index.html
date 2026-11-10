@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlatKilat - Kumpulan Tools Gratis, Cepat & 100% Privat</title>
   <meta name="description" content="Kompres foto pas 200KB, pasfoto merah/biru, gabung PDF, kalkulator PPh 21 TER, dan generator kwitansi instan. Tanpa upload server, 100% privat di browsermu.">
+  <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
@@ -44,7 +45,7 @@
       </div>
       <nav class="flex items-center gap-2 sm:gap-4 text-sm text-slate-400">
         <button onclick="switchView('home')" class="hover:text-white px-2 py-1 transition">Semua Tools</button>
-        <a href="#tentang" class="hover:text-white px-2 py-1 transition">Privasi</a>
+        <a href="privacy.html" class="hover:text-white px-2 py-1 transition">Kebijakan Privasi</a>
       </nav>
     </div>
   </header>
@@ -1203,9 +1204,9 @@
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p>© 2026 AlatKilat. Semua proses berjalan lokal di peramban pengguna.</p>
       <div class="flex gap-4">
-        <span>Bebas Kuota Server</span>
+        <a href="privacy.html" class="hover:text-slate-300 transition">Kebijakan Privasi</a>
         <span>•</span>
-        <span>Privasi Aman</span>
+        <a href="privacy.html" class="hover:text-slate-300 transition">Ketentuan Layanan</a>
         <span>•</span>
         <span>Tanpa Watermark</span>
       </div>

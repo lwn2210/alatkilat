@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kebijakan Privasi & Ketentuan Layanan - AlatKilat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { brand: { 500: '#10b981', 600: '#059669', 700: '#047857' } }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white">
+          <i data-lucide="zap" class="w-5 h-5"></i>
+        </div>
+        <span class="font-bold text-lg text-white">AlatKilat</span>
+      </a>
+      <a href="index.html" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1.5">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Beranda
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-12 space-y-10 text-sm leading-relaxed text-slate-300">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white">Kebijakan Privasi & Ketentuan Layanan</h1>
+      <p class="text-xs text-slate-500 mt-2">Terakhir diperbarui: 10 November 2026</p>
+    </div>
+
+    <!-- Section 1 -->
+    <section class="space-y-3 p-6 rounded-2xl bg-slate-900 border border-slate-800">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-5 h-5 text-brand-400"></i>
+        1. Pemrosesan Data Klien 100% Lokal (Client-Side)
+      </h2>
+      <p>
+        Privasi Anda adalah prioritas utama kami. Semua alat yang disediakan di <strong>AlatKilat</strong> (termasuk kompresi foto, penggabungan dan pemotongan PDF, OCR teks gambar, pengeditan audio, serta penghitungan pajak dan kwitansi) beroperasi sepenuhnya di peramban (browser) perangkat Anda menggunakan teknologi <em>WebAssembly</em>, <em>Canvas API</em>, dan <em>Web Audio API</em>.
+      </p>
+      <p class="text-brand-300 font-medium">
+        Berkas, dokumen identitas (KTP/ijazah), foto pribadi, dan data keuangan Anda TIDAK PERNAH diunggah atau disimpan ke server mana pun melalui internet.
+      </p>
+    </section>
+
+    <!-- Section 2 -->
+    <section class="space-y-3 p-6 rounded-2xl bg-slate-900 border border-slate-800">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <i data-lucide="cookie" class="w-5 h-5 text-amber-400"></i>
+        2. Cookies dan Iklan Pihak Ketiga (Google AdSense)
+      </h2>
+      <p>
+        Situs web ini dapat menampilkan iklan yang disediakan oleh vendor pihak ketiga, termasuk Google. Google menggunakan cookies (seperti cookie DART) untuk menayangkan iklan kepada pengguna berdasarkan kunjungan mereka ke situs ini dan situs lain di internet.
+      </p>
+      <ul class="list-disc list-inside space-y-1 pl-2 text-xs text-slate-400">
+        <li>Vendor pihak ketiga, termasuk Google, menggunakan cookie untuk menayangkan iklan berdasarkan kunjungan pengguna sebelumnya ke situs web kami.</li>
+        <li>Penggunaan cookie iklan oleh Google memungkinkan Google dan mitranya menayangkan iklan berdasarkan kunjungan ke situs ini dan/atau situs lain di Internet.</li>
+        <li>Pengguna dapat memilih untuk menonaktifkan iklan hasil personalisasi dengan mengunjungi <a href="https://adssettings.google.com" target="_blank" class="text-brand-400 underline">Setelan Iklan Google</a>.</li>
+      </ul>
+    </section>
+
+    <!-- Section 3 -->
+    <section class="space-y-3 p-6 rounded-2xl bg-slate-900 border border-slate-800">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <i data-lucide="file-text" class="w-5 h-5 text-blue-400"></i>
+        3. Ketentuan Penggunaan (Terms of Use)
+      </h2>
+      <p>
+        Layanan di AlatKilat disediakan "sebagaimana adanya" (<em>as is</em>) secara gratis untuk membantu produktivitas masyarakat umum, pebisnis UMKM, mahasiswa, dan profesional.
+      </p>
+      <p>
+        Kami berusaha semaksimal mungkin memastikan akurasi hasil perhitungan (seperti PPh 21 TER dan kwitansi), namun pengguna disarankan untuk memverifikasi kembali data keuangan resmi dengan akuntan atau konsultan pajak berwenang.
+      </p>
+    </section>
+
+    <!-- Section 4 -->
+    <section class="space-y-3 p-6 rounded-2xl bg-slate-900 border border-slate-800">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <i data-lucide="mail" class="w-5 h-5 text-teal-400"></i>
+        4. Kontak Kami
+      </h2>
+      <p>
+        Jika Anda memiliki pertanyaan mengenai kebijakan privasi atau ingin memberikan saran alat baru, hubungi kami melalui surel pengembang di: <code class="px-2 py-0.5 rounded bg-slate-800 text-brand-300">rizki.samudra12@gmail.com</code>.
+      </p>
+    </section>
+  </main>
+
+  <footer class="mt-12 border-t border-slate-900 py-8 text-center text-xs text-slate-500">
+    <p>© 2026 AlatKilat. Dikelola oleh Samudra & Tim Pengembang.</p>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>
