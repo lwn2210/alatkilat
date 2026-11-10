@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlatKilat - Kumpulan Tools Gratis, Cepat & 100% Privat</title>
+  <meta name="description" content="Kompres foto pas 200KB, pasfoto merah/biru, gabung PDF, kalkulator PPh 21 TER, dan generator kwitansi instan. Tanpa upload server, 100% privat di browsermu.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669', 700: '#047857' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-card:hover { border-color: rgba(16, 185, 129, 0.4); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('home')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">AlatKilat</span>
+          <span class="text-xs px-2 py-0.5 ml-1.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium">100% Client-Side</span>
+        </div>
+      </div>
+      <nav class="flex items-center gap-2 sm:gap-4 text-sm text-slate-400">
+        <button onclick="switchView('home')" class="hover:text-white px-2 py-1 transition">Semua Tools</button>
+        <a href="#tentang" class="hover:text-white px-2 py-1 transition">Privasi</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- HOME VIEW -->
+    <div id="view-home" class="space-y-8">
+      
+      <!-- Hero -->
+      <section class="text-center py-6 sm:py-10 max-w-2xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 mb-4">
+          <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+          Berkas aman, diproses langsung di HP/laptopmu tanpa kirim ke server
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+          Tools Harian Serba Cepat, <br>
+          <span class="bg-gradient-to-r from-brand-400 to-teal-300 bg-clip-text text-transparent">Gratis & Tanpa Batas</span>
+        </h1>
+        <p class="text-slate-400 mt-3 text-sm sm:text-base">
+          Solusi kilat untuk urusan CPNS, BUMN, kantor, dan olshop. Pilih tool di bawah:
+        </p>
+
+        <!-- Search Bar -->
+        <div class="relative mt-6 max-w-lg mx-auto">
+          <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="tool-search" placeholder="Cari tool... (cth: kompres, pasfoto, pdf, kwitansi)" 
+                 class="w-full pl-12 pr-4 py-3 bg-slate-900/90 border border-slate-800 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition shadow-inner">
+        </div>
+      </section>
+
+      <!-- Category Filter Pills -->
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <button onclick="filterCategory('all')" class="cat-pill active px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-brand-500 text-white transition">Semua</button>
+        <button onclick="filterCategory('photo')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">📸 Foto & Gambar</button>
+        <button onclick="filterCategory('pdf')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">📄 Dokumen & PDF</button>
+        <button onclick="filterCategory('finance')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">💰 Finansial & Bisnis</button>
+        <button onclick="filterCategory('util')" class="cat-pill px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition">⚡ Utilitas & QR</button>
+      </div>
+
+      <!-- Tools Grid -->
+      <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pt-2">
+
+        <!-- Tool 1: Kompres Foto Pas Target -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="photo" onclick="switchView('tool-compress-img')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <i data-lucide="image-down" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">Populer CPNS</span>
+              <h3 class="text-base font-bold text-white mt-1">Kompres Foto Pas Ukuran</h3>
+              <p class="text-xs text-slate-400 mt-1">Kecilkan file foto/KTP persis di bawah 100KB, 200KB, atau 500KB tanpa buram.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 2: Pasfoto Background & Size -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="photo" onclick="switchView('tool-pasfoto')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <i data-lucide="user-square-2" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400">Formal</span>
+              <h3 class="text-base font-bold text-white mt-1">Pembuat Pasfoto Resmi</h3>
+              <p class="text-xs text-slate-400 mt-1">Crop ukuran resmi 2x3, 3x4, 4x6 & ganti warna background merah atau biru.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 3: Gabung PDF -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-merge-pdf')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <i data-lucide="layers" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Multi-Berkas</span>
+              <h3 class="text-base font-bold text-white mt-1">Gabung Banyak PDF</h3>
+              <p class="text-xs text-slate-400 mt-1">Satukan ijazah, transkrip, sertifikat jadi satu file PDF rapi tanpa batas halaman.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 4: Gambar ke PDF -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-img-to-pdf')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <i data-lucide="file-up" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400">Konversi</span>
+              <h3 class="text-base font-bold text-white mt-1">Foto / Scan ke PDF</h3>
+              <p class="text-xs text-slate-400 mt-1">Ubah foto KTP, struk, atau dokumen jadi file PDF standar ukuran A4.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 5: Kalkulator PPh 21 TER -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="finance" onclick="switchView('tool-pph21')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <i data-lucide="calculator" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400">Aturan Pajak</span>
+              <h3 class="text-base font-bold text-white mt-1">Kalkulator Gaji Bersih PPh 21</h3>
+              <p class="text-xs text-slate-400 mt-1">Hitung potongan pajak TER bulanan dan gaji bersih take-home-pay otomatis.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 6: Generator Kwitansi PDF -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="finance" onclick="switchView('tool-kwitansi')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              <i data-lucide="receipt" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400">Bisnis & Olshop</span>
+              <h3 class="text-base font-bold text-white mt-1">Generator Kwitansi Instan</h3>
+              <p class="text-xs text-slate-400 mt-1">Isi form transaksi, terbilang otomatis terisi, langsung download kwitansi PDF.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 7: QR Code Generator -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="util" onclick="switchView('tool-qrcode')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <i data-lucide="qr-code" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400">Cepat</span>
+              <h3 class="text-base font-bold text-white mt-1">Generator QR Code Instan</h3>
+              <p class="text-xs text-slate-400 mt-1">Bikin QR Code untuk link website, teks, atau chat WhatsApp langsung.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 8: Case Converter & Word Counter -->
+        <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="util" onclick="switchView('tool-text-case')">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+              <i data-lucide="type" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-400">Teks</span>
+              <h3 class="text-base font-bold text-white mt-1">Pengubah Huruf & Karakter</h3>
+              <p class="text-xs text-slate-400 mt-1">Ubah huruf besar, kecil, kapital awal kata, hitung jumlah kata dan karakter.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Ruang Iklan / AdSense Placeholder -->
+      <div class="p-4 rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 text-center text-xs text-slate-500">
+        [ Ruang Iklan / Google AdSense Slot Banner ]
+      </div>
+
+      <!-- FAQ & Privacy Statement -->
+      <section id="tentang" class="pt-8 border-t border-slate-800 space-y-4">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-5 h-5 text-brand-400"></i>
+          Kenapa AlatKilat 100% Aman & Privat?
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-400">
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800/80">
+            <h4 class="font-semibold text-slate-200 mb-1">Tanpa Upload Server</h4>
+            <p>Berkas PDF dan gambar kamu diolah langsung oleh browser perangkatmu sendiri memakai WebAssembly dan Canvas API.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800/80">
+            <h4 class="font-semibold text-slate-200 mb-1">KTP & Berkas Sensitif Aman</h4>
+            <p>Karena tidak pernah dikirim ke internet, foto KTP, rekening, dan data pribadi tidak mungkin bocor dari server kami.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800/80">
+            <h4 class="font-semibold text-slate-200 mb-1">Gratis Selamanya</h4>
+            <p>Tidak ada limit harian atau jebakan watermark langganan. Ringan dan bisa dipakai bahkan saat kuota minim.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- TOOL VIEW CONTAINER (Hidden by default) -->
+    <div id="view-tool-container" class="hidden space-y-6">
+      
+      <!-- Back Bar -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <button onclick="switchView('home')" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-sm text-slate-300 hover:text-white transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          Kembali ke Daftar Tools
+        </button>
+        <span id="active-tool-badge" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Tool Aktif</span>
+      </div>
+
+      <!-- Specific Tool Sections -->
+
+      <!-- TOOL: Kompres Foto Pas Target -->
+      <section id="tool-compress-img" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Kompres Foto Pas Ukuran (Target KB)</h2>
+          <p class="text-xs text-slate-400 mt-1">Pilih target ukuran maksimal agar pas dengan syarat unggah portal pendaftaran.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <!-- Dropzone -->
+          <div id="drop-compress-img" class="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="upload-cloud" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Klik atau geser foto ke sini</p>
+            <p class="text-xs text-slate-500 mt-1">Mendukung JPG, PNG, WebP</p>
+            <input type="file" id="input-compress-img" accept="image/*" class="hidden">
+          </div>
+
+          <!-- Target Controls -->
+          <div class="space-y-3">
+            <label class="text-xs font-semibold text-slate-300">Pilih Target Ukuran Maksimal:</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="setCompressTarget(100)" class="target-btn px-3 py-2 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 hover:bg-brand-600 hover:text-white transition">100 KB</button>
+              <button onclick="setCompressTarget(200)" class="target-btn active px-3 py-2 rounded-lg bg-brand-600 text-xs font-medium text-white transition">200 KB</button>
+              <button onclick="setCompressTarget(300)" class="target-btn px-3 py-2 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 hover:bg-brand-600 hover:text-white transition">300 KB</button>
+              <button onclick="setCompressTarget(500)" class="target-btn px-3 py-2 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 hover:bg-brand-600 hover:text-white transition">500 KB</button>
+            </div>
+          </div>
+
+          <!-- Preview & Result -->
+          <div id="result-compress-img" class="hidden space-y-4 pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>Ukuran Asli: <strong id="orig-size-img" class="text-slate-200">-</strong></span>
+              <span>Ukuran Hasil: <strong id="new-size-img" class="text-brand-400 font-bold">-</strong></span>
+            </div>
+            <div class="max-h-64 overflow-hidden rounded-lg flex items-center justify-center bg-slate-950 p-2">
+              <img id="preview-compress-img" class="max-h-60 object-contain rounded" alt="Preview">
+            </div>
+            <button id="btn-dl-compress-img" class="w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 transition">
+              <i data-lucide="download" class="w-4 h-4"></i> Download Foto Terkompres
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Pasfoto Maker -->
+      <section id="tool-pasfoto" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Pembuat Pasfoto Resmi</h2>
+          <p class="text-xs text-slate-400 mt-1">Ubah rasio pasfoto resmi (2x3, 3x4, 4x6) dan ganti warna latar belakang.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-pasfoto" class="border-2 border-dashed border-slate-700 hover:border-purple-500 rounded-xl p-6 text-center cursor-pointer transition">
+            <i data-lucide="user-check" class="w-8 h-8 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih Foto Portrait / Pasfoto</p>
+            <input type="file" id="input-pasfoto" accept="image/*" class="hidden">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-2">Ukuran Resmi:</label>
+              <select id="select-pasfoto-ratio" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white">
+                <option value="3x4">3 x 4 cm (Standar)</option>
+                <option value="4x6">4 x 6 cm (Ijazah / SKCK)</option>
+                <option value="2x3">2 x 3 cm (Buku Nikah / Dokumen)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-300 block mb-2">Warna Background:</label>
+              <div class="flex gap-2">
+                <button onclick="setBgColor('#d32f2f')" class="bg-color-btn flex-1 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold border-2 border-transparent">Merah</button>
+                <button onclick="setBgColor('#1976d2')" class="bg-color-btn flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold border-2 border-transparent">Biru</button>
+                <button onclick="setBgColor('#ffffff')" class="bg-color-btn flex-1 py-2 rounded-lg bg-white text-slate-900 text-xs font-semibold border-2 border-transparent">Putih</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="result-pasfoto" class="hidden space-y-4 pt-4 border-t border-slate-800">
+            <div class="flex justify-center p-4 bg-slate-950 rounded-xl">
+              <canvas id="canvas-pasfoto" class="max-h-72 shadow-lg border border-slate-800 rounded"></canvas>
+            </div>
+            <button id="btn-dl-pasfoto" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+              <i data-lucide="download" class="w-4 h-4"></i> Download Pasfoto Siap Cetak
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Gabung PDF -->
+      <section id="tool-merge-pdf" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Gabung Banyak Berkas PDF</h2>
+          <p class="text-xs text-slate-400 mt-1">Gabungkan beberapa file PDF jadi satu file urut tanpa batas ukuran.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-merge-pdf" class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="file-plus-2" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih 2 atau lebih file PDF</p>
+            <p class="text-xs text-slate-500 mt-1">Bisa pilih sekaligus banyak berkas</p>
+            <input type="file" id="input-merge-pdf" accept="application/pdf" multiple class="hidden">
+          </div>
+
+          <ul id="list-merge-pdf" class="space-y-2 text-xs text-slate-300"></ul>
+
+          <button id="btn-run-merge-pdf" disabled class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <i data-lucide="combine" class="w-4 h-4"></i> Gabungkan & Download PDF
+          </button>
+        </div>
+      </section>
+
+      <!-- TOOL: Foto ke PDF -->
+      <section id="tool-img-to-pdf" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Ubah Foto / Scan ke Dokumen PDF</h2>
+          <p class="text-xs text-slate-400 mt-1">Konversi foto dokumen, KTP, atau nota ke lembar PDF A4 yang rapi.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div id="drop-img-pdf" class="border-2 border-dashed border-slate-700 hover:border-amber-500 rounded-xl p-8 text-center cursor-pointer transition">
+            <i data-lucide="image" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-sm font-medium text-slate-200">Pilih Satu atau Beberapa Foto</p>
+            <input type="file" id="input-img-pdf" accept="image/*" multiple class="hidden">
+          </div>
+          <ul id="list-img-pdf" class="space-y-2 text-xs text-slate-300"></ul>
+          <button id="btn-run-img-pdf" disabled class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <i data-lucide="file-text" class="w-4 h-4"></i> Buat Dokumen PDF
+          </button>
+        </div>
+      </section>
+
+      <!-- TOOL: Kalkulator PPh 21 TER -->
+      <section id="tool-pph21" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Kalkulator Gaji Bersih & PPh 21 TER</h2>
+          <p class="text-xs text-slate-400 mt-1">Sesuai aturan Tarif Efektif Rata-Rata (TER) PP 58/2023.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1">Gaji Bruto Bulanan (Rp):</label>
+            <input type="number" id="input-gaji-bruto" placeholder="Contoh: 8500000" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-rose-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1">Status Pajak / Tanggungan (PTKP):</label>
+            <select id="select-ptkp" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-rose-500 focus:outline-none">
+              <option value="A">Kategori A: TK/0 (54 Juta), TK/1 (58.5 Juta), K/0 (58.5 Juta)</option>
+              <option value="B">Kategori B: TK/2, TK/3, K/1, K/2 (63 - 72 Juta)</option>
+              <option value="C">Kategori C: K/3 (72 Juta ke atas)</option>
+            </select>
+          </div>
+          <button onclick="hitungPPh21()" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm transition">
+            Hitung Potongan Pajak
+          </button>
+
+          <div id="result-pph21" class="hidden p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 mt-4 text-xs">
+            <div class="flex justify-between pb-2 border-b border-slate-800">
+              <span class="text-slate-400">Tarif Efektif (TER):</span>
+              <strong id="res-pph21-rate" class="text-white">0%</strong>
+            </div>
+            <div class="flex justify-between pb-2 border-b border-slate-800">
+              <span class="text-slate-400">Potongan PPh 21 Bulanan:</span>
+              <strong id="res-pph21-potongan" class="text-rose-400 font-bold">Rp 0</strong>
+            </div>
+            <div class="flex justify-between pt-1 text-sm">
+              <span class="text-slate-300 font-semibold">Gaji Bersih Diterima:</span>
+              <strong id="res-pph21-bersih" class="text-brand-400 font-extrabold text-base">Rp 0</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Generator Kwitansi PDF -->
+      <section id="tool-kwitansi" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Generator Kwitansi Instan Siap Cetak</h2>
+          <p class="text-xs text-slate-400 mt-1">Kwitansi formal lengkap dengan nomor, terbilang otomatis, dan tanda tangan.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 text-xs">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-semibold text-slate-300 block mb-1">Nomor Kwitansi:</label>
+              <input type="text" id="kw-no" value="KW-001" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-300 block mb-1">Tanggal Transaksi:</label>
+              <input type="date" id="kw-date" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+            </div>
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-300 block mb-1">Telah Diterima Dari (Nama Pembayar):</label>
+            <input type="text" id="kw-dari" placeholder="Nama Lengkap / Perusahaan" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-300 block mb-1">Jumlah Uang (Rp):</label>
+            <input type="number" id="kw-jumlah" placeholder="Contoh: 1500000" oninput="autoTerbilang()" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-300 block mb-1">Terbilang (Otomatis):</label>
+            <input type="text" id="kw-terbilang" readonly class="w-full p-2.5 bg-slate-950 border border-slate-800 text-slate-400 italic rounded-lg">
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-300 block mb-1">Untuk Pembayaran:</label>
+            <input type="text" id="kw-untuk" placeholder="Contoh: Pelunasan Jasa Pembuatan Website" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-semibold text-slate-300 block mb-1">Kota:</label>
+              <input type="text" id="kw-kota" value="Jakarta" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-300 block mb-1">Nama Penerima:</label>
+              <input type="text" id="kw-penerima" placeholder="Nama yang tanda tangan" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white">
+            </div>
+          </div>
+
+          <button onclick="buatKwitansiPDF()" class="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-sm transition mt-2 flex items-center justify-center gap-2">
+            <i data-lucide="file-check" class="w-4 h-4"></i> Download Kwitansi PDF Resmi
+          </button>
+        </div>
+      </section>
+
+      <!-- TOOL: QR Code Generator -->
+      <section id="tool-qrcode" class="tool-content hidden space-y-6 max-w-xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Generator QR Code Instan</h2>
+          <p class="text-xs text-slate-400 mt-1">Buat QR code beresolusi tajam untuk link, WhatsApp, atau teks biasa.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1">Isi Link / Teks / No. WA:</label>
+            <input type="text" id="input-qr-text" placeholder="https://instagram.com/akun atau pesan apa saja" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-indigo-500 focus:outline-none">
+          </div>
+          <button onclick="generateQRCode()" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition">
+            Generate QR Code
+          </button>
+
+          <div id="result-qr" class="hidden flex flex-col items-center gap-4 pt-4 border-t border-slate-800">
+            <div id="qrcode-box" class="p-4 bg-white rounded-xl shadow-lg"></div>
+            <button onclick="downloadQRCode()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-2 transition">
+              <i data-lucide="download" class="w-4 h-4"></i> Download Gambar PNG
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOL: Case Converter -->
+      <section id="tool-text-case" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-white">Pengubah Format Huruf & Hitung Teks</h2>
+          <p class="text-xs text-slate-400 mt-1">Ubah kapitalisasi teks instan dan lihat statistik karakter.</p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+          <textarea id="input-case-text" rows="5" placeholder="Ketik atau tempel teks di sini..." oninput="updateTextStats()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:border-teal-500 focus:outline-none"></textarea>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+            <span>Karakter: <strong id="stat-chars" class="text-white">0</strong></span>
+            <span>Kata: <strong id="stat-words" class="text-white">0</strong></span>
+            <span>Paragraf: <strong id="stat-paragraphs" class="text-white">0</strong></span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+            <button onclick="transformText('upper')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white transition">HURUF BESAR</button>
+            <button onclick="transformText('lower')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white transition">huruf kecil</button>
+            <button onclick="transformText('title')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white transition">Kapital Awal Kata</button>
+            <button onclick="transformText('slug')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white transition">format-url-slug</button>
+          </div>
+
+          <button onclick="copyTransformedText()" class="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition">
+            <i data-lucide="copy" class="w-4 h-4"></i> Salin Teks ke Clipboard
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-16 border-t border-slate-900 py-8 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>© 2026 AlatKilat. Semua proses berjalan lokal di peramban pengguna.</p>
+      <div class="flex gap-4">
+        <span>Bebas Kuota Server</span>
+        <span>•</span>
+        <span>Privasi Aman</span>
+        <span>•</span>
+        <span>Tanpa Watermark</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
