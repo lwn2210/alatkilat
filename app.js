@@ -963,6 +963,9 @@ async function handleExtractPdfUpload(files) {
     const numPages = pdf.numPages;
 
     let fullText = '';
+    const contentPages = [];
+    currentExtractedText = '';
+    outputArea.value = '';
 
     for (let pageNum = 1; pageNum <= numPages; pageNum++) {
       const pct = Math.round((pageNum / numPages) * 100);
@@ -974,15 +977,20 @@ async function handleExtractPdfUpload(files) {
       const textContent = await page.getTextContent();
       const pageText = textContent.items.map(item => item.str).join(' ');
 
-      fullText += `--- [ Halaman ${pageNum} ] ---\n` + pageText.trim() + '\n\n';
+      contentPages.push(pageText.trim());
+      if (pageText.trim()) fullText += `--- [ Halaman ${pageNum} ] ---\n` + pageText.trim() + '\n\n';
     }
 
     currentExtractedText = fullText.trim();
     outputArea.value = currentExtractedText;
 
-    // Calculate stats
-    const words = currentExtractedText ? currentExtractedText.split(/\s+/).length : 0;
-    const chars = currentExtractedText.length;
+    // Count only PDF text-layer content, never generated page labels.
+    const contentText = contentPages.filter(Boolean).join('\n');
+    const words = contentText ? contentText.split(/\s+/).length : 0;
+    const chars = contentText.length;
+    document.getElementById('extract-pdf-notice').textContent = contentText
+      ? 'Hanya text layer yang diekstrak; halaman scan tanpa teks tidak menjalankan OCR. Statistik tidak menghitung label halaman.'
+      : 'PDF ini tidak memiliki text layer yang terbaca. Ekstraksi ini bukan OCR PDF scan. Ubah halaman menjadi gambar, lalu gunakan OCR gambar.';
 
     document.getElementById('stat-extract-pages').textContent = `Halaman: ${numPages}`;
     document.getElementById('stat-extract-words').textContent = `Kata: ${words.toLocaleString('id-ID')}`;
@@ -1566,7 +1574,14 @@ let currentOcrText = '';
 
 async function handleOcrUpload(files) {
   const file = files[0];
-  if (!file || !file.type.startsWith('image/')) return;
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    currentOcrText = '';
+    document.getElementById('output-ocr-text').value = '';
+    document.getElementById('result-ocr-box').classList.add('hidden');
+    alert('OCR ini hanya gambar (JPG/PNG/WebP), bukan PDF. Untuk PDF scan, ubah halaman menjadi gambar terlebih dahulu.');
+    return;
+  }
 
   const progressBox = document.getElementById('ocr-progress-box');
   const progressBar = document.getElementById('ocr-bar');
@@ -1705,9 +1720,9 @@ function getOlshopUrl(marketplace, keyword, cheapest) {
       ? `https://www.tokopedia.com/search?q=${q}&ob=3` 
       : `https://www.tokopedia.com/search?q=${q}`;
   } else if (marketplace === 'blibli') {
-    return cheapest 
-      ? `https://www.blibli.com/backend/search/products?searchTerm=${q}&sort=3` 
-      : `https://www.blibli.com/backend/search/products?searchTerm=${q}`;
+    // Public listing route; arbitrary keyword coverage and sorting are not guaranteed.
+    const slug = keyword.trim().replace(/\s+/g, '-');
+    return `https://www.blibli.com/jual/${encodeURIComponent(slug)}`;
   } else if (marketplace === 'lazada') {
     return cheapest 
       ? `https://www.lazada.co.id/catalog/?q=${q}&sort=priceasc` 

@@ -1,7 +1,7 @@
 {
   "name": "AlatKilat - Kumpulan Tools Gratis & Cepat",
   "short_name": "AlatKilat",
-  "description": "Tools kompres foto, split PDF, OCR, kalkulator PPh 21, audio trimmer 100% lokal di browser.",
+  "description": "Pemrosesan berkas di browser: foto, PDF, OCR gambar, simulasi TER 0%, audio. Online-only; bukan aplikasi offline.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#020617",

@@ -40,7 +40,7 @@
         </div>
         <div>
           <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">AlatKilat</span>
-          <span class="text-xs px-2 py-0.5 ml-1.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium">100% Client-Side</span>
+          <span class="text-xs px-2 py-0.5 ml-1.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium">Pemrosesan Berkas Lokal</span>
         </div>
       </div>
       <nav class="flex items-center gap-2 sm:gap-4 text-sm text-slate-400">
@@ -99,7 +99,7 @@
               <i data-lucide="image-down" class="w-6 h-6"></i>
             </div>
             <div class="flex-1">
-              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">Populer CPNS</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">Target Ukuran</span>
               <h3 class="text-base font-bold text-white mt-1">Kompres Foto Pas Ukuran</h3>
               <p class="text-xs text-slate-400 mt-1">Kecilkan file foto/KTP persis di bawah 100KB, 200KB, atau 500KB tanpa buram.</p>
             </div>
@@ -198,7 +198,7 @@
             </div>
             <div class="flex-1">
               <span class="text-xs font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400">Aturan Pajak</span>
-              <h3 class="text-base font-bold text-white mt-1">Kalkulator Gaji Bersih PPh 21</h3>
+              <h3 class="text-base font-bold text-white mt-1">Simulasi TER Terbatas 0%</h3>
               <p class="text-xs text-slate-400 mt-1">Simulasi terbatas: hanya rentang tarif nol TER yang tervalidasi; bukan perhitungan gaji bersih lengkap.</p>
             </div>
           </div>
@@ -311,7 +311,7 @@
             <div class="flex-1">
               <span class="text-xs font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400">OCR Lokal</span>
               <h3 class="text-base font-bold text-white mt-1">OCR Ekstrak Teks Gambar</h3>
-              <p class="text-xs text-slate-400 mt-1">Salin tulisan dari foto buku, dokumen scan, atau nota belanja tanpa ketik ulang.</p>
+              <p class="text-xs text-slate-400 mt-1">OCR hanya gambar foto/scan, bukan berkas PDF; model bahasa perlu internet.</p>
             </div>
           </div>
         </div>
@@ -338,8 +338,8 @@
             </div>
             <div class="flex-1">
               <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">Multi Olshop</span>
-              <h3 class="text-base font-bold text-white mt-1">Pencari Barang Termurah</h3>
-              <p class="text-xs text-slate-400 mt-1">Bandingkan harga Shopee, Tokopedia, Blibli, dan Lazada dalam 1 kali ketik.</p>
+              <h3 class="text-base font-bold text-white mt-1">Pembuka Pencarian Marketplace</h3>
+              <p class="text-xs text-slate-400 mt-1">Buka pencarian, lalu bandingkan harga secara manual di situs marketplace. Bukan agregator harga.</p>
             </div>
           </div>
         </div>
@@ -363,12 +363,12 @@
             <p>Berkas PDF dan gambar kamu diolah langsung oleh browser perangkatmu sendiri memakai WebAssembly dan Canvas API.</p>
           </div>
           <div class="p-4 rounded-xl bg-slate-900 border border-slate-800/80">
-            <h4 class="font-semibold text-slate-200 mb-1">KTP & Berkas Sensitif Aman</h4>
+            <h4 class="font-semibold text-slate-200 mb-1">Batasan Privasi</h4>
             <p>Alat pengolah berkas berjalan di browser dan tidak dirancang mengunggah berkas ke server kami. Pustaka CDN dimuat dari pihak ketiga; ini bukan jaminan keamanan mutlak. Kata kunci marketplace dikirim ke situs tujuan saat tautan dibuka.</p>
           </div>
           <div class="p-4 rounded-xl bg-slate-900 border border-slate-800/80">
-            <h4 class="font-semibold text-slate-200 mb-1">Gratis Selamanya</h4>
-            <p>Tidak ada limit harian atau jebakan watermark langganan. Ringan dan bisa dipakai bahkan saat kuota minim.</p>
+            <h4 class="font-semibold text-slate-200 mb-1">Tanpa Biaya Saat Ini</h4>
+            <p>Tidak ada limit harian atau jebakan watermark langganan. Online-only: perlu internet untuk pustaka dan model OCR; manifest bukan dukungan offline.</p>
           </div>
         </div>
       </section>
@@ -414,12 +414,12 @@
 
             <!-- Quick Instansi Presets -->
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mr-1">Preset Instansi:</span>
-              <button onclick="setCompressTarget(100)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">KTP (100KB)</button>
-              <button onclick="setCompressTarget(200)" class="px-2.5 py-1 rounded-md bg-brand-600/30 border border-brand-500/50 text-[11px] text-brand-300 font-bold transition">CPNS / PPPK (200KB)</button>
-              <button onclick="setCompressTarget(300)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">KIP (300KB)</button>
-              <button onclick="setCompressTarget(500)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">SNBT / Kampus (500KB)</button>
-              <button onclick="setCompressTarget(1000)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">LPDP (1MB)</button>
+              <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mr-1">Preset Ukuran (bukan syarat resmi):</span>
+              <button onclick="setCompressTarget(100)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">100 KB</button>
+              <button onclick="setCompressTarget(200)" class="px-2.5 py-1 rounded-md bg-brand-600/30 border border-brand-500/50 text-[11px] text-brand-300 font-bold transition">200 KB</button>
+              <button onclick="setCompressTarget(300)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">300 KB</button>
+              <button onclick="setCompressTarget(500)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">500 KB</button>
+              <button onclick="setCompressTarget(1000)" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition">1 MB</button>
             </div>
 
             <!-- Custom Buttons -->
@@ -537,7 +537,7 @@
       <!-- TOOL: Kalkulator PPh 21 TER -->
       <section id="tool-pph21" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
         <div class="text-center">
-          <h2 class="text-2xl font-bold text-white">Kalkulator Gaji Bersih & PPh 21 TER</h2>
+          <h2 class="text-2xl font-bold text-white">Simulasi PPh 21 TER — Rentang 0%</h2>
           <p class="text-xs text-slate-400 mt-1">Rentang tervalidasi hanya tarif 0%: A ≤ Rp5.400.000, B ≤ Rp6.200.000, C ≤ Rp6.600.000 per bulan. Di atasnya hasil dinonaktifkan. Bukan rekonsiliasi masa pajak terakhir, dan belum termasuk BPJS/potongan lain. Sumber: <a class="underline" href="https://pajak.go.id/sites/default/files/2024-02/PMK%20168%20Tahun%202023%20Tentang%20PPh%20Pasal%2021%20TER.pdf" target="_blank" rel="noopener noreferrer">tabel TER DJP (PP 58/2023)</a>.</p>
         </div>
 
@@ -797,14 +797,14 @@
       <section id="tool-extract-pdf" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
         <div class="text-center">
           <h2 class="text-2xl font-bold text-white">Ekstrak Teks & Data PDF</h2>
-          <p class="text-xs text-slate-400 mt-1">Salin semua isi ketikan teks dari berkas PDF ke teks atau Word tanpa ngetik manual.</p>
+          <p class="text-xs text-slate-400 mt-1">Ekstraksi hanya text layer PDF digital, bukan OCR PDF scan. Export .DOC berupa HTML kompatibel Word, bukan .DOCX.</p>
         </div>
 
         <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
           <div id="drop-extract-pdf" class="border-2 border-dashed border-slate-700 hover:border-sky-500 rounded-xl p-8 text-center cursor-pointer transition">
             <i data-lucide="file-search" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
             <p class="text-sm font-medium text-slate-200">Pilih Berkas PDF untuk Diekstrak</p>
-            <p class="text-xs text-slate-500 mt-1">Membaca teks per halaman secara otomatis</p>
+            <p class="text-xs text-slate-500 mt-1">Membaca text layer; PDF scan tanpa teks tidak didukung sebagai OCR</p>
             <input type="file" id="input-extract-pdf" accept="application/pdf" class="hidden">
           </div>
 
@@ -819,6 +819,7 @@
           </div>
 
           <div id="result-extract-pdf" class="hidden space-y-4">
+            <p id="extract-pdf-notice" role="status" class="text-xs text-amber-300"></p>
             <div class="flex items-center justify-between text-xs text-slate-400">
               <span id="stat-extract-pages">Halaman: 0</span>
               <span id="stat-extract-words">Kata: 0</span>
@@ -1062,7 +1063,7 @@
       <section id="tool-ocr-text" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
         <div class="text-center">
           <h2 class="text-2xl font-bold text-white">OCR Ekstrak Teks dari Gambar</h2>
-          <p class="text-xs text-slate-400 mt-1">Salin tulisan dari foto buku, dokumen scan, atau nota tanpa ketik manual (100% lokal).</p>
+          <p class="text-xs text-slate-400 mt-1">Hanya gambar (JPG/PNG/WebP), bukan PDF. Untuk PDF scan, ubah halaman menjadi gambar terlebih dahulu. OCR memuat model dari jaringan, lalu memproses gambar di browser.</p>
         </div>
 
         <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
@@ -1167,11 +1168,11 @@
         </div>
       </section>
 
-      <!-- TOOL 18: Pencari Barang Termurah di Olshop -->
+      <!-- TOOL 18: Pembuka Pencarian Marketplace di Olshop -->
       <section id="tool-olshop-finder" class="tool-content hidden space-y-6 max-w-2xl mx-auto">
         <div class="text-center">
-          <h2 class="text-2xl font-bold text-white">Pencari Barang Termurah di Marketplace</h2>
-          <p class="text-xs text-slate-400 mt-1">Cari dan bandingkan harga di Shopee, Tokopedia, Blibli, dan Lazada sekaligus.</p>
+          <h2 class="text-2xl font-bold text-white">Pembuka Pencarian Marketplace</h2>
+          <p class="text-xs text-slate-400 mt-1">Buka situs tujuan untuk perbandingan manual; bukan agregator dan tidak menjamin harga terendah. Blibli: tautan listing publik, dukungan pencarian dinamis terbatas dan belum diuji end-to-end. Kata kunci dikirim ke situs tujuan.</p>
         </div>
 
         <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
@@ -1182,7 +1183,7 @@
 
           <div class="flex items-center gap-2 text-xs text-slate-400">
             <input type="checkbox" id="olshop-sort-cheapest" checked class="rounded bg-slate-800 border-slate-700 text-brand-500">
-            <label for="olshop-sort-cheapest">Otomatis urutkan dari harga paling murah</label>
+            <label for="olshop-sort-cheapest">Minta urutan harga naik jika didukung (bukan jaminan termurah; Blibli tanpa urutan otomatis)</label>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
@@ -1217,7 +1218,7 @@
   <!-- Footer -->
   <footer class="mt-16 border-t border-slate-900 py-8 text-center text-xs text-slate-500">
     <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p>© 2026 AlatKilat. Semua proses berjalan lokal di peramban pengguna.</p>
+      <p>© 2026 AlatKilat. Pemrosesan berkas di browser; pencarian membuka situs pihak ketiga.</p>
       <div class="flex gap-4">
         <a href="privacy.html" class="hover:text-slate-300 transition">Kebijakan Privasi</a>
         <span>•</span>
