@@ -36,7 +36,9 @@ function switchView(viewName) {
 }
 
 // Category Filtering
+let activeCategory = 'all';
 function filterCategory(cat) {
+  activeCategory = cat;
   const pills = document.querySelectorAll('.cat-pill');
   pills.forEach(p => {
     p.classList.remove('active', 'bg-brand-500', 'text-white');
@@ -51,7 +53,8 @@ function filterCategory(cat) {
 
   const cards = document.querySelectorAll('.tool-card');
   cards.forEach(card => {
-    if (cat === 'all' || card.dataset.cat === cat) {
+    const q = document.getElementById('tool-search').value.toLowerCase().trim();
+    if ((cat === 'all' || card.dataset.cat === cat) && (!q || card.textContent.toLowerCase().includes(q))) {
       card.classList.remove('hidden');
     } else {
       card.classList.add('hidden');
@@ -70,7 +73,7 @@ function setupSearch() {
 
     cards.forEach(card => {
       const text = card.textContent.toLowerCase();
-      if (!q || text.includes(q)) {
+      if ((activeCategory === 'all' || card.dataset.cat === activeCategory) && (!q || text.includes(q))) {
         card.classList.remove('hidden');
       } else {
         card.classList.add('hidden');
@@ -166,8 +169,17 @@ async function runImageCompression(file) {
   const newSizeEl = document.getElementById('new-size-img');
   const dlBtn = document.getElementById('btn-dl-compress-img');
 
+  resultDiv.classList.add('hidden');
+  compressedBlob = null;
+  dlBtn.onclick = null;
   const img = new Image();
   const reader = new FileReader();
+  const fail = () => {
+    currentCompressFile = null;
+    alert('Gambar tidak dapat dibaca. Pilih berkas gambar yang valid.');
+  };
+  img.onerror = fail;
+  reader.onerror = fail;
 
   reader.onload = (e) => {
     img.src = e.target.result;
@@ -291,7 +303,7 @@ function renderPasfoto() {
     canvas.toBlob((blob) => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `pasfoto-${ratio}-${currentBgColor === '#d32f2f' ? 'merah' : 'biru'}.jpg`;
+      a.download = `pasfoto-${ratio}-${currentBgColor === '#d32f2f' ? 'merah' : currentBgColor === '#ffffff' ? 'putih' : 'biru'}.jpg`;
       a.click();
     }, 'image/jpeg', 0.95);
   };
@@ -325,11 +337,12 @@ function updateMergeList() {
     li.innerHTML = `
       <div class="flex items-center gap-2 truncate">
         <span class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px]">${idx + 1}</span>
-        <span class="truncate">${file.name}</span>
+        <span class="truncate" data-file-name></span>
         <span class="text-[10px] text-slate-500">(${formatBytes(file.size)})</span>
       </div>
       <button onclick="removeMergeFile(${idx})" class="text-rose-400 hover:text-rose-300 px-2">Hapus</button>
     `;
+    li.querySelector('[data-file-name]').textContent = file.name;
     list.appendChild(li);
   });
 
@@ -396,10 +409,11 @@ function updateImgToPdfList() {
     li.innerHTML = `
       <div class="flex items-center gap-2 truncate">
         <span class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px]">${idx + 1}</span>
-        <span class="truncate">${file.name}</span>
+        <span class="truncate" data-file-name></span>
       </div>
       <button onclick="removeImgToPdfFile(${idx})" class="text-rose-400 hover:text-rose-300 px-2">Hapus</button>
     `;
+    li.querySelector('[data-file-name]').textContent = file.name;
     list.appendChild(li);
   });
 
@@ -428,8 +442,17 @@ async function executeImgToPdf() {
       let embeddedImg;
       if (file.type.includes('png')) {
         embeddedImg = await pdfDoc.embedPng(buffer);
-      } else {
+      } else if (file.type === 'image/jpeg') {
         embeddedImg = await pdfDoc.embedJpg(buffer);
+      } else {
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        canvas.getContext('2d').drawImage(bitmap, 0, 0);
+        bitmap.close();
+        const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        embeddedImg = await pdfDoc.embedPng(await png.arrayBuffer());
       }
 
       const page = pdfDoc.addPage([A4_W, A4_H]);
@@ -471,48 +494,15 @@ function hitungPPh21() {
     return;
   }
 
-  let rate = 0;
-
-  if (kategori === 'A') {
-    if (bruto <= 5400000) rate = 0;
-    else if (bruto <= 5650000) rate = 0.0025;
-    else if (bruto <= 5950000) rate = 0.005;
-    else if (bruto <= 6300000) rate = 0.0075;
-    else if (bruto <= 6750000) rate = 0.01;
-    else if (bruto <= 7500000) rate = 0.0125;
-    else if (bruto <= 8550000) rate = 0.015;
-    else if (bruto <= 9650000) rate = 0.0175;
-    else if (bruto <= 10050000) rate = 0.02;
-    else if (bruto <= 10350000) rate = 0.0225;
-    else if (bruto <= 10700000) rate = 0.025;
-    else if (bruto <= 12500000) rate = 0.03;
-    else if (bruto <= 13750000) rate = 0.04;
-    else if (bruto <= 15100000) rate = 0.05;
-    else if (bruto <= 16950000) rate = 0.06;
-    else if (bruto <= 19750000) rate = 0.07;
-    else rate = 0.09;
-  } else if (kategori === 'B') {
-    if (bruto <= 6200000) rate = 0;
-    else if (bruto <= 6500000) rate = 0.0025;
-    else if (bruto <= 6850000) rate = 0.005;
-    else if (bruto <= 7300000) rate = 0.0075;
-    else if (bruto <= 9200000) rate = 0.01;
-    else if (bruto <= 10750000) rate = 0.015;
-    else if (bruto <= 12550000) rate = 0.02;
-    else if (bruto <= 14300000) rate = 0.03;
-    else if (bruto <= 16000000) rate = 0.04;
-    else rate = 0.06;
-  } else { // Kategori C
-    if (bruto <= 6600000) rate = 0;
-    else if (bruto <= 6950000) rate = 0.0025;
-    else if (bruto <= 7350000) rate = 0.005;
-    else if (bruto <= 7800000) rate = 0.0075;
-    else if (bruto <= 8850000) rate = 0.01;
-    else if (bruto <= 9800000) rate = 0.0125;
-    else if (bruto <= 10950000) rate = 0.015;
-    else if (bruto <= 12300000) rate = 0.02;
-    else rate = 0.04;
+  // Only the zero-rate boundaries have been checked against DJP's TER table.
+  // Do not extrapolate a partial table into unverified taxable brackets.
+  const validatedLimits = { A: 5400000, B: 6200000, C: 6600000 };
+  resultDiv.classList.add('hidden');
+  if (!Number.isFinite(bruto) || !validatedLimits[kategori] || bruto > validatedLimits[kategori]) {
+    alert('Di luar rentang tervalidasi: A sampai Rp5.400.000, B sampai Rp6.200.000, C sampai Rp6.600.000. Hasil tidak dihitung; gunakan tabel TER resmi DJP.');
+    return;
   }
+  const rate = 0;
 
   const potongan = Math.round(bruto * rate);
   const bersih = bruto - potongan;
@@ -571,6 +561,7 @@ async function buatKwitansiPDF() {
   const kota = document.getElementById('kw-kota').value || 'Jakarta';
   const penerima = document.getElementById('kw-penerima').value || 'Penerima Pembayaran';
 
+  try {
   const pdfDoc = await PDFLib.PDFDocument.create();
   // Landscape half-page voucher: 595 x 350
   const page = pdfDoc.addPage([595, 360]);
@@ -625,6 +616,9 @@ async function buatKwitansiPDF() {
   a.href = URL.createObjectURL(blob);
   a.download = `kwitansi-${no}.pdf`;
   a.click();
+  } catch (err) {
+    alert('Kwitansi gagal dibuat. Font PDF standar tidak mendukung semua karakter (misalnya emoji). Periksa isian dan gunakan karakter yang didukung. Detail: ' + err.message);
+  }
 }
 
 // ==========================================
@@ -642,7 +636,10 @@ function generateQRCode() {
     return;
   }
 
+  res.classList.add('hidden');
   box.innerHTML = '';
+  qrInstance = null;
+  try {
   qrInstance = new QRCode(box, {
     text: text,
     width: 200,
@@ -651,6 +648,11 @@ function generateQRCode() {
     colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.H
   });
+  } catch (err) {
+    box.innerHTML = '';
+    alert('Teks terlalu panjang atau tidak dapat dibuat menjadi QR. Pendekkan teks lalu coba lagi.');
+    return;
+  }
 
   res.classList.remove('hidden');
 }
@@ -672,7 +674,7 @@ function updateTextStats() {
   const text = document.getElementById('input-case-text').value;
   const chars = text.length;
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const paragraphs = text.trim() ? text.split(/\n+/).length : 0;
+  const paragraphs = text.trim() ? text.split(/\n+/).filter(part => part.trim()).length : 0;
 
   document.getElementById('stat-chars').textContent = chars;
   document.getElementById('stat-words').textContent = words;
@@ -753,27 +755,13 @@ function setSplitPreset(type) {
 
 function parsePageRange(rangeStr, maxPages) {
   const pages = new Set();
-  const parts = rangeStr.split(',');
-
-  for (let part of parts) {
-    part = part.trim();
-    if (!part) continue;
-
-    if (part.includes('-')) {
-      const [startStr, endStr] = part.split('-');
-      const start = parseInt(startStr, 10);
-      const end = parseInt(endStr, 10);
-      if (!isNaN(start) && !isNaN(end)) {
-        const min = Math.max(1, Math.min(start, end));
-        const max = Math.min(maxPages, Math.max(start, end));
-        for (let i = min; i <= max; i++) pages.add(i - 1); // 0-indexed
-      }
-    } else {
-      const num = parseInt(part, 10);
-      if (!isNaN(num) && num >= 1 && num <= maxPages) {
-        pages.add(num - 1); // 0-indexed
-      }
-    }
+  for (const part of rangeStr.split(',')) {
+    const match = part.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!match) return [];
+    const start = Number(match[1]);
+    const end = Number(match[2] || match[1]);
+    if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 1 || end < start || end > maxPages) return [];
+    for (let i = start; i <= end; i++) pages.add(i - 1);
   }
   return Array.from(pages).sort((a, b) => a - b);
 }
@@ -842,6 +830,8 @@ function handleCompressPdfUpload(files) {
   const file = files[0];
   if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
 
+  compressedPdfBlob = null;
+  document.getElementById('btn-start-compress-pdf').classList.remove('hidden');
   compressPdfFile = file;
   document.getElementById('comp-pdf-name').textContent = file.name;
   document.getElementById('comp-pdf-orig-size').textContent = 'Ukuran: ' + formatBytes(file.size);
@@ -1071,7 +1061,7 @@ async function handleAudioUpload(files) {
     document.getElementById('audio-file-name').textContent = file.name;
     document.getElementById('audio-duration-info').textContent = 'Durasi: ' + formatAudioDuration(duration);
     document.getElementById('audio-start-time').value = '0';
-    document.getElementById('audio-end-time').value = Math.min(30, Math.floor(duration)).toString();
+    document.getElementById('audio-end-time').value = Math.min(30, duration).toString();
     document.getElementById('audio-end-time').max = duration.toFixed(1);
 
     document.getElementById('box-audio-controls').classList.remove('hidden');
@@ -1543,7 +1533,7 @@ function cleanTextAction(mode) {
 
   if (mode === 'join-lines' || mode === 'all') {
     // Replace single line breaks with spaces, preserving double line breaks (paragraphs)
-    text = text.replace(/([^\n])\n([^\n])/g, '$1 $2');
+    text = text.replace(/(?<!\n)\n(?!\n)/g, ' ');
   }
 
   if (mode === 'fix-hyphens' || mode === 'all') {
@@ -1664,6 +1654,14 @@ function compareUnitPrice() {
     return;
   }
 
+  const dimension = unit => ['ml', 'l'].includes(unit) ? 'volume' : ['gr', 'kg'].includes(unit) ? 'mass' : 'count';
+  if (dimension(uA) !== dimension(uB)) {
+    costAEl.textContent = costBEl.textContent = 'Harga per unit: -';
+    titleEl.textContent = 'Satuan tidak sejenis — tidak dapat dibandingkan.';
+    descEl.textContent = 'Gunakan volume dengan volume, berat dengan berat, atau pcs dengan pcs.';
+    boxEl.className = 'p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-1';
+    return;
+  }
   // Normalize to base unit (ml or gram or pcs)
   const normA = (uA === 'l' || uA === 'kg') ? vA * 1000 : vA;
   const normB = (uB === 'l' || uB === 'kg') ? vB * 1000 : vB;
