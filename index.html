@@ -6,12 +6,16 @@
   <title>AlatKilat - Kumpulan Tools Gratis, Cepat & Diproses di Browser</title>
   <meta name="description" content="Kompres foto pas 200KB, pasfoto merah/biru, gabung PDF, kalkulator PPh 21 TER, dan generator kwitansi instan. Berkas diproses di browser; koneksi diperlukan untuk pustaka pihak ketiga.">
   <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@1.72.0/dist/umd/lucide.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script type="module">
+    import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.4.299/build/pdf.min.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.4.299/build/pdf.worker.min.mjs';
+    window.pdfjsLib = pdfjsLib;
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',

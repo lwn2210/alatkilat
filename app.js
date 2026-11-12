@@ -82,10 +82,7 @@ function setupSearch() {
   });
 }
 
-// Initialize PDF.js worker if available
-if (typeof pdfjsLib !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
+// PDF.js and its matching module worker are initialized together in index.html.
 
 // Global Drag & Drop Helper
 function setupDragAndDrop() {
@@ -816,6 +813,7 @@ async function executeSplitPdf() {
 let compressPdfFile = null;
 let compressPdfPreset = 'med'; // 'low', 'med', 'high'
 let compressedPdfBlob = null;
+let compressPdfGeneration = 0;
 
 function setPdfCompressPreset(preset) {
   compressPdfPreset = preset;
@@ -840,6 +838,9 @@ function handleCompressPdfUpload(files) {
   const file = files[0];
   if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
 
+  compressPdfGeneration++;
+  document.getElementById('compress-pdf-progress-box').classList.add('hidden');
+  document.getElementById('btn-dl-compress-pdf').onclick = null;
   compressedPdfBlob = null;
   document.getElementById('btn-start-compress-pdf').classList.remove('hidden');
   compressPdfFile = file;
@@ -856,6 +857,10 @@ async function executeCompressPdf() {
     return;
   }
 
+  const generation = ++compressPdfGeneration;
+  const file = compressPdfFile;
+  const preset = compressPdfPreset;
+  let pdf = null;
   const startBtn = document.getElementById('btn-start-compress-pdf');
   const progressBox = document.getElementById('compress-pdf-progress-box');
   const progressBar = document.getElementById('compress-pdf-bar');
@@ -868,8 +873,10 @@ async function executeCompressPdf() {
   resultDiv.classList.add('hidden');
 
   try {
-    const arrayBuffer = await compressPdfFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
+    const arrayBuffer = await file.arrayBuffer();
+    if (generation !== compressPdfGeneration) return;
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
+    if (generation !== compressPdfGeneration) return;
     const numPages = pdf.numPages;
 
     const outPdf = await PDFLib.PDFDocument.create();
@@ -877,11 +884,12 @@ async function executeCompressPdf() {
     // Scale and quality settings based on preset
     let scale = 1.0;
     let quality = 0.65;
-    if (compressPdfPreset === 'low') { scale = 1.25; quality = 0.82; }
-    if (compressPdfPreset === 'med') { scale = 0.95; quality = 0.65; }
-    if (compressPdfPreset === 'high') { scale = 0.75; quality = 0.45; }
+    if (preset === 'low') { scale = 1.25; quality = 0.82; }
+    if (preset === 'med') { scale = 0.95; quality = 0.65; }
+    if (preset === 'high') { scale = 0.75; quality = 0.45; }
 
     for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      if (generation !== compressPdfGeneration) return;
       const pct = Math.round((pageNum / numPages) * 100);
       progressBar.style.width = pct + '%';
       progressPercent.textContent = pct + '%';
@@ -913,12 +921,13 @@ async function executeCompressPdf() {
     }
 
     const compressedBytes = await outPdf.save();
+    if (generation !== compressPdfGeneration) return;
     compressedPdfBlob = new Blob([compressedBytes], { type: 'application/pdf' });
 
     progressBox.classList.add('hidden');
     resultDiv.classList.remove('hidden');
 
-    const origSize = compressPdfFile.size;
+    const origSize = file.size;
     const newSize = compressedPdfBlob.size;
     document.getElementById('res-comp-orig').textContent = formatBytes(origSize);
     document.getElementById('res-comp-new').textContent = formatBytes(newSize);
@@ -936,15 +945,18 @@ async function executeCompressPdf() {
     document.getElementById('btn-dl-compress-pdf').onclick = () => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(compressedPdfBlob);
-      a.download = `kompres-${compressPdfFile.name}`;
+      a.download = `kompres-${file.name}`;
       a.click();
     };
 
     lucide.createIcons();
   } catch (err) {
+    if (generation !== compressPdfGeneration) return;
     alert('Gagal mengompres PDF: ' + err.message);
     startBtn.classList.remove('hidden');
     progressBox.classList.add('hidden');
+  } finally {
+    if (pdf) await pdf.loadingTask.destroy();
   }
 }
 
@@ -952,8 +964,14 @@ async function executeCompressPdf() {
 // TOOL 11: EKSTRAK TEKS & DATA PDF
 // ==========================================
 let currentExtractedText = '';
+let extractPdfGeneration = 0;
 
 async function handleExtractPdfUpload(files) {
+  const generation = ++extractPdfGeneration;
+  currentExtractedText = '';
+  document.getElementById('output-extracted-text').value = '';
+  document.getElementById('result-extract-pdf').classList.add('hidden');
+  document.getElementById('extract-pdf-progress-box').classList.add('hidden');
   const file = files[0];
   if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
 
@@ -967,9 +985,12 @@ async function handleExtractPdfUpload(files) {
   progressBox.classList.remove('hidden');
   resultDiv.classList.add('hidden');
 
+  let pdf = null;
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
+    if (generation !== extractPdfGeneration) return;
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
+    if (generation !== extractPdfGeneration) return;
     const numPages = pdf.numPages;
 
     let fullText = '';
@@ -978,6 +999,7 @@ async function handleExtractPdfUpload(files) {
     outputArea.value = '';
 
     for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      if (generation !== extractPdfGeneration) return;
       const pct = Math.round((pageNum / numPages) * 100);
       progressBar.style.width = pct + '%';
       progressPercent.textContent = pct + '%';
@@ -991,6 +1013,7 @@ async function handleExtractPdfUpload(files) {
       if (pageText.trim()) fullText += `--- [ Halaman ${pageNum} ] ---\n` + pageText.trim() + '\n\n';
     }
 
+    if (generation !== extractPdfGeneration) return;
     currentExtractedText = fullText.trim();
     outputArea.value = currentExtractedText;
 
@@ -1010,8 +1033,11 @@ async function handleExtractPdfUpload(files) {
     resultDiv.classList.remove('hidden');
     lucide.createIcons();
   } catch (err) {
+    if (generation !== extractPdfGeneration) return;
     alert('Gagal mengekstrak teks dari PDF: ' + err.message);
     progressBox.classList.add('hidden');
+  } finally {
+    if (pdf) await pdf.loadingTask.destroy();
   }
 }
 
