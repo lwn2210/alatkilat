@@ -489,6 +489,7 @@ function hitungPPh21() {
   const kategori = document.getElementById('select-ptkp').value;
   const resultDiv = document.getElementById('result-pph21');
 
+  resultDiv.classList.add('hidden');
   if (bruto <= 0) {
     alert('Masukkan nominal gaji bruto yang valid.');
     return;
@@ -543,7 +544,7 @@ function angkaKeTerbilang(nilai) {
 function autoTerbilang() {
   const val = parseFloat(document.getElementById('kw-jumlah').value) || 0;
   const out = document.getElementById('kw-terbilang');
-  if (val <= 0) {
+  if (!Number.isSafeInteger(val) || val <= 0 || val >= 1000000000000) {
     out.value = '';
     return;
   }
@@ -556,6 +557,11 @@ async function buatKwitansiPDF() {
   const tgl = document.getElementById('kw-date').value || '2026-11-10';
   const dari = document.getElementById('kw-dari').value || 'Pelanggan Terhormat';
   const jumlah = parseFloat(document.getElementById('kw-jumlah').value) || 0;
+  if (!Number.isSafeInteger(jumlah) || jumlah <= 0 || jumlah >= 1000000000000) {
+    alert('Masukkan jumlah rupiah bulat positif, kurang dari Rp1.000.000.000.000. Pecahan rupiah belum didukung.');
+    return;
+  }
+  autoTerbilang();
   const terbilang = document.getElementById('kw-terbilang').value || '-';
   const untuk = document.getElementById('kw-untuk').value || 'Pembayaran Jasa/Barang';
   const kota = document.getElementById('kw-kota').value || 'Jakarta';
@@ -716,6 +722,10 @@ let splitPdfTotalPages = 0;
 let splitPdfOriginalName = 'dokumen.pdf';
 
 async function handleSplitPdfUpload(files) {
+  splitPdfDoc = null;
+  splitPdfBuffer = null;
+  splitPdfTotalPages = 0;
+  document.getElementById('box-split-controls').classList.add('hidden');
   const file = files[0];
   if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
 
@@ -859,7 +869,7 @@ async function executeCompressPdf() {
 
   try {
     const arrayBuffer = await compressPdfFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
     const numPages = pdf.numPages;
 
     const outPdf = await PDFLib.PDFDocument.create();
@@ -959,7 +969,7 @@ async function handleExtractPdfUpload(files) {
 
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
     const numPages = pdf.numPages;
 
     let fullText = '';
@@ -1027,7 +1037,7 @@ function downloadExtractedDoc() {
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head><meta charset='utf-8'><title>Hasil Ekstrak Dokumen</title></head>
     <body style="font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.5;">
-      ${currentExtractedText.replace(/\n\n/g, '<p></p>').replace(/\n/g, '<br/>')}
+      ${currentExtractedText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n\n/g, '<p></p>').replace(/\n/g, '<br/>')}
     </body>
     </html>
   `;
