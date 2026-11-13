@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paket Berkas Lamaran — AlatKilat</title>
+  <script defer src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script defer src="lamaran-resources.js"></script>
+  <script defer src="lamaran.js"></script>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #020617; color: #f1f5f9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; line-height: 1.6; }
+    main { max-width: 48rem; padding: 1.25rem; margin: auto; }
+    a { color: #6ee7b7; display: inline-flex; align-items: center; min-height: 44px; }
+    h1 { font-size: clamp(1.75rem, 6vw, 2.4rem); line-height: 1.2; }
+    .panel { background: #0f172a; border: 1px solid #334155; border-radius: 1rem; padding: 1.25rem; margin-block: 1.5rem; }
+    .note { color: #cbd5e1; }
+    .badge { display: inline-block; color: #6ee7b7; font-size: .875rem; margin-top: 1.5rem; }
+    input, button { font: inherit; max-width: 100%; }
+    input { display: block; margin-top: .75rem; width: 100%; min-height: 44px; }
+    input::file-selector-button, button { min-height: 44px; border: 1px solid #6ee7b7; border-radius: .5rem; background: #064e3b; color: #ecfdf5; padding: .6rem .9rem; cursor: pointer; }
+    button { margin-top: 1rem; width: 100%; font-weight: 650; }
+    .file-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .5rem; }
+    .file-actions button { width: auto; margin: 0; flex: 1 1 auto; padding-inline: .65rem; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    :focus-visible { outline: 3px solid #fbbf24; outline-offset: 4px; }
+    ol { padding-left: 1.6rem; }
+    li { padding-block: .5rem; border-bottom: 1px solid #334155; overflow-wrap: anywhere; }
+    progress { width: 100%; accent-color: #10b981; }
+    #lamaran-status { overflow-wrap: anywhere; min-height: 3rem; }
+    footer { font-size: .875rem; border-top: 1px solid #334155; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Navigasi"><a href="index.html">← Semua tool AlatKilat</a></nav>
+    <span class="badge">Pratinjau lokal · tahap 1</span>
+    <h1>Paket Berkas Lamaran</h1>
+    <p class="note">Satukan PDF dan gambar PNG/JPEG menjadi satu PDF. Halaman PDF tetap sesuai urutan aslinya; setiap gambar menjadi satu halaman A4.</p>
+    <section class="panel" aria-labelledby="upload-heading">
+      <h2 id="upload-heading">1. Pilih berkas</h2>
+      <label for="lamaran-files">Pilih PDF atau gambar</label>
+      <input id="lamaran-files" type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" multiple aria-describedby="lamaran-help">
+      <p id="lamaran-help" class="note">Pilih beberapa berkas sekaligus. Pilihan baru menggantikan daftar lama. Atur urutan dengan tombol Naikkan/Turunkan atau hapus berkas dari daftar; halaman dalam tiap PDF tetap berurutan. Maksimal 30 berkas, input total 40 MiB, 25 megapiksel per gambar, total 30 megapiksel gambar dan 100 halaman (termasuk gambar) per pilihan. Anggaran sumber daya terhitung 512 MiB: input ×2, piksel ×12 byte, PNG normalisasi ×2, halaman PDF ×64 KiB, objek PDF ×1 KiB dan byte stream PDF. Ini batas kebijakan, bukan pengukuran RAM atau jaminan terhadap setiap decompression bomb; parsing PDF dapat mengembang sebelum batas terdeteksi. Header PNG/JPEG yang rusak/tidak dikenal ditolak sebelum decode; JPEG harus memiliki header dimensi yang didukung dalam 1 MiB pertama. Orientasi JPEG mengikuti hasil decoder browser; gambar dinormalkan ulang dan ukuran output dapat bertambah.</p>
+      <ol id="lamaran-list" aria-label="Urutan berkas terpilih"></ol>
+    </section>
+    <section class="panel" aria-labelledby="export-heading">
+      <h2 id="export-heading">2. Gabungkan & unduh</h2>
+      <label for="lamaran-name">Nama PDF hasil</label>
+      <input id="lamaran-name" type="text" value="berkas-lamaran.pdf" maxlength="160" aria-describedby="lamaran-name-help">
+      <p id="lamaran-name-help" class="note">Karakter path, kontrol, dan karakter tidak aman diganti; akhiran .pdf ditambahkan otomatis. Nama kosong memakai berkas-lamaran.pdf.</p>
+      <label for="lamaran-limit">Batas ukuran (KB)</label>
+      <input id="lamaran-limit" type="text" inputmode="decimal" value="1000" aria-describedby="lamaran-limit-help lamaran-limit-error">
+      <p id="lamaran-limit-help" class="note">Masukkan angka positif minimal 0.001 KB (1 byte), desimal memakai titik. 1 KB = 1000 byte. Batas hanya dibandingkan dengan ukuran PDF hasil; berkas yang melebihi batas tetap dapat diunduh. Tidak ada kompresi otomatis atau jaminan diterima institusi.</p>
+      <p id="lamaran-limit-error" role="alert" hidden></p>
+      <progress id="lamaran-progress" value="0" max="1" aria-label="Progres pemrosesan"></progress>
+      <p id="lamaran-status" role="status" aria-live="polite" aria-atomic="true">Belum ada berkas dipilih.</p>
+      <button id="lamaran-merge" type="button" disabled>Gabungkan & unduh PDF</button>
+    </section>
+    <footer class="note">
+      <p>Berkas diproses di browser, tanpa upload berkas oleh alur ini. Pustaka PDF-lib 1.17.1 dimuat dari unpkg.com dan membutuhkan koneksi internet. Ini bukan jaminan keamanan mutlak atau fitur offline.</p>
+      <p>Gabungan membuat salinan halaman untuk dibaca, bukan pelestarian tanda tangan digital, formulir interaktif atau lampiran. PDF terkunci/rusak dapat ditolak. Periksa lagi isi hasil unduhan sebelum dipakai.</p>
+      <a href="privacy.html">Kebijakan privasi & ketentuan</a>
+    </footer>
+  </main>
+</body>
+</html>
