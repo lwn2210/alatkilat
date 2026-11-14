@@ -22,8 +22,10 @@ const entered=p=>p.evaluate(()=>window.__gateEntered);
 const release=async p=>{await p.evaluate(async()=>{window.__restoreGate();await window.__gateDone;await new Promise(r=>setTimeout(r,0))})};
 const noDownload=async(p,start)=>assert.equal(downloadsSeen(p),start,'An obsolete job downloaded');
 const seen=new WeakMap();function downloadsSeen(p){return seen.get(p)||0;}
+const defaultChrome = fs.existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome') ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined;
 (async()=>{
- browser=await chromium.launch({...(process.env.LAMARAN_CHROME?{executablePath:process.env.LAMARAN_CHROME}:{}),headless:true});context=await browser.newContext({acceptDownloads:true,viewport:{width:1280,height:900}});
+ const chromeExecutable = process.env.LAMARAN_CHROME || defaultChrome;
+ browser=await chromium.launch({...(chromeExecutable?{executablePath:chromeExecutable}:{}),headless:true});context=await browser.newContext({acceptDownloads:true,viewport:{width:1280,height:900}});
  context.on('request',r=>requests.push({method:r.method(),url:r.url(),resourceType:r.resourceType()}));
  context.on('page',p=>{p.on('pageerror',e=>pageErrors.push({url:p.url(),error:e.message}));p.on('console',m=>{if(m.type()==='error')consoleErrors.push({url:p.url(),message:m.text()})});p.on('download',()=>seen.set(p,downloadsSeen(p)+1))});
  const setup=await page();
