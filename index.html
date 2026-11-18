@@ -96,6 +96,24 @@
       <!-- Tools Grid -->
       <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pt-2">
 
+        <a href="pdf-ke-gambar.html" class="tool-card glass-card rounded-2xl p-5 block focus:outline focus:outline-2 focus:outline-emerald-300" data-cat="pdf" aria-label="PDF ke JPG atau PNG ZIP">
+          <span class="text-xs text-emerald-300">Pratinjau lokal</span>
+          <h3 class="text-base font-bold text-white mt-1">PDF ke JPG / PNG ZIP</h3>
+          <p class="text-xs text-slate-400 mt-1">Pilih halaman dan urutan, unduh gambar raster dalam satu ZIP. Batas dimensi dan memori berlaku.</p>
+        </a>
+
+        <a href="lamaran.html" class="tool-card glass-card rounded-2xl p-5 block focus:outline focus:outline-2 focus:outline-emerald-300" data-cat="pdf" aria-label="Paket Berkas Lamaran">
+          <span class="text-xs text-emerald-300">Pratinjau lokal · tahap 1</span>
+          <h3 class="text-base font-bold text-white mt-1">Paket Berkas Lamaran</h3>
+          <p class="text-xs text-slate-400 mt-1">Gabungkan PDF dan gambar menjadi satu PDF. Periksa urutan pilihan dan ukuran hasil aktual.</p>
+        </a>
+
+        <a href="batch-gambar.html" class="tool-card glass-card rounded-2xl p-5 block focus:outline focus:outline-2 focus:outline-emerald-300" data-cat="photo" aria-label="Batch Gambar ZIP">
+          <span class="text-xs text-emerald-300">Pratinjau lokal</span>
+          <h3 class="text-base font-bold text-white mt-1">Batch Gambar ZIP</h3>
+          <p class="text-xs text-slate-400 mt-1">Ubah ukuran, format dan nama beberapa PNG/JPEG dalam satu ZIP; kualitas JPEG dapat diatur.</p>
+        </a>
+
         <!-- Tool 1: Kompres Foto Pas Target -->
         <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="photo" onclick="switchView('tool-compress-img')">
           <div class="flex items-start gap-4">
@@ -123,6 +141,10 @@
             </div>
           </div>
         </div>
+
+        <a href="editor-pdf.html" class="tool-card glass-card rounded-2xl p-5 transition hover:-translate-y-1" data-cat="pdf">
+          <div class="flex items-start gap-4"><div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i data-lucide="file-text" class="w-6 h-6"></i></div><div><span class="text-xs font-semibold text-emerald-400">Atur Halaman</span><h3 class="text-base font-bold text-white mt-1">Editor Halaman PDF</h3><p class="text-xs text-slate-400 mt-1">Urutkan, hapus, putar, beri nomor dan watermark teks.</p></div></div>
+        </a>
 
         <!-- Tool 3: Gabung PDF -->
         <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-merge-pdf')">
@@ -179,6 +201,11 @@
             </div>
           </div>
         </div>
+
+        <!-- Standalone PDF ke Word + OCR -->
+        <a href="pdf-ke-word.html" class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf">
+          <div class="flex items-start gap-4"><div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i data-lucide="file-text" class="w-6 h-6"></i></div><div class="flex-1"><span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">OCR Lokal</span><h3 class="text-base font-bold text-white mt-1">PDF ke Word + OCR</h3><p class="text-xs text-slate-400 mt-1">Ekstrak teks PDF digital atau scan ke DOCX yang dapat diedit.</p></div></div>
+        </a>
 
         <!-- Tool 11: Ekstrak Teks & Data PDF -->
         <div class="tool-card glass-card rounded-2xl p-5 cursor-pointer transition hover:-translate-y-1" data-cat="pdf" onclick="switchView('tool-extract-pdf')">

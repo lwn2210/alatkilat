@@ -1,0 +1,13 @@
+{
+  "name": "alatkilat-local-acceptance",
+  "private": true,
+  "version": "1.0.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "npm run test:resources && npm run test:acceptance && npm run test:budgets",
+    "test:acceptance": "node tests/lamaran/run.cjs",
+    "test:budgets": "node tests/lamaran/run.cjs --budgets",
+    "test:resources": "node --test tests/lamaran/resources.test.cjs"
+  },
+  "devDependencies": { "playwright": "1.65.0" }
+}

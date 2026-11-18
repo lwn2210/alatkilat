@@ -717,8 +717,10 @@ let splitPdfDoc = null;
 let splitPdfBuffer = null;
 let splitPdfTotalPages = 0;
 let splitPdfOriginalName = 'dokumen.pdf';
+let splitPdfGeneration = 0;
 
 async function handleSplitPdfUpload(files) {
+  const generation = ++splitPdfGeneration;
   splitPdfDoc = null;
   splitPdfBuffer = null;
   splitPdfTotalPages = 0;
@@ -726,12 +728,19 @@ async function handleSplitPdfUpload(files) {
   const file = files[0];
   if (!file || !(file.type === 'application/pdf' || file.name.endsWith('.pdf'))) return;
 
-  splitPdfOriginalName = file.name;
-  splitPdfBuffer = await file.arrayBuffer();
-
   try {
-    splitPdfDoc = await PDFLib.PDFDocument.load(splitPdfBuffer);
-    splitPdfTotalPages = splitPdfDoc.getPageCount();
+    const buffer = await file.arrayBuffer();
+    if (generation !== splitPdfGeneration) return;
+    if (!window.PDFLib?.PDFDocument) {
+      alert('Pustaka PDF belum tersedia. Periksa koneksi internet, muat ulang halaman, lalu coba lagi.');
+      return;
+    }
+    const pdf = await window.PDFLib.PDFDocument.load(buffer);
+    if (generation !== splitPdfGeneration) return;
+    splitPdfOriginalName = file.name;
+    splitPdfBuffer = buffer;
+    splitPdfDoc = pdf;
+    splitPdfTotalPages = pdf.getPageCount();
 
     document.getElementById('split-pdf-name').textContent = file.name;
     document.getElementById('split-pdf-pages').textContent = `Total: ${splitPdfTotalPages} Halaman`;
@@ -739,6 +748,7 @@ async function handleSplitPdfUpload(files) {
     document.getElementById('input-split-range').value = `1-${Math.min(splitPdfTotalPages, 3)}`;
     lucide.createIcons();
   } catch (err) {
+    if (generation !== splitPdfGeneration) return;
     alert('Gagal membaca PDF: ' + err.message);
   }
 }
@@ -775,6 +785,9 @@ function parsePageRange(rangeStr, maxPages) {
 
 async function executeSplitPdf() {
   if (!splitPdfDoc) return;
+  const generation = splitPdfGeneration;
+  const sourcePdf = splitPdfDoc;
+  const originalName = splitPdfOriginalName;
   const rangeStr = document.getElementById('input-split-range').value.trim();
   const pageIndices = parsePageRange(rangeStr, splitPdfTotalPages);
 
@@ -789,17 +802,18 @@ async function executeSplitPdf() {
 
   try {
     const newPdf = await PDFLib.PDFDocument.create();
-    const copiedPages = await newPdf.copyPages(splitPdfDoc, pageIndices);
+    const copiedPages = await newPdf.copyPages(sourcePdf, pageIndices);
     copiedPages.forEach(p => newPdf.addPage(p));
 
     const pdfBytes = await newPdf.save();
+    if (generation !== splitPdfGeneration) return;
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `pisah-${rangeStr.replace(/[^a-zA-Z0-9-]/g, '_')}-${splitPdfOriginalName}`;
+    a.download = `pisah-${rangeStr.replace(/[^a-zA-Z0-9-]/g, '_')}-${originalName}`;
     a.click();
   } catch (err) {
-    alert('Gagal memisahkan PDF: ' + err.message);
+    if (generation === splitPdfGeneration) alert('Gagal memisahkan PDF: ' + err.message);
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<i data-lucide="scissors" class="w-4 h-4"></i> Pisahkan & Download PDF`;
@@ -1082,6 +1096,9 @@ let currentAudioBuffer = null;
 let currentAudioSource = null;
 let isAudioPlaying = false;
 let audioOriginalFileName = 'audio.mp3';
+let audioUploadGeneration = 0;
+let audioPlayGeneration = 0;
+let audioPlayPending = false;
 
 function getAudioContext() {
   if (!audioContext) {
@@ -1092,14 +1109,31 @@ function getAudioContext() {
 
 async function handleAudioUpload(files) {
   const file = files[0];
-  if (!file || !file.type.startsWith('audio/')) return;
-
-  audioOriginalFileName = file.name;
-  const ctx = getAudioContext();
-  const arrayBuffer = await file.arrayBuffer();
+  if (!file) return;
+  const generation = ++audioUploadGeneration;
+  ++audioPlayGeneration;
+  audioPlayPending = false;
+  currentAudioBuffer = null;
+  if (currentAudioSource) {
+    currentAudioSource.onended = null;
+    currentAudioSource.stop();
+    currentAudioSource = null;
+  }
+  isAudioPlaying = false;
+  document.getElementById('btn-play-audio-selection').innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Putar Pilihan`;
+  document.getElementById('box-audio-controls').classList.add('hidden');
+  if (!file.type.startsWith('audio/')) {
+    alert('Pilih berkas audio yang valid.');
+    return;
+  }
 
   try {
-    currentAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    const ctx = getAudioContext();
+    const arrayBuffer = await file.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(arrayBuffer);
+    if (generation !== audioUploadGeneration) return;
+    currentAudioBuffer = decoded;
+    audioOriginalFileName = file.name;
     const duration = currentAudioBuffer.duration;
 
     document.getElementById('audio-file-name').textContent = file.name;
@@ -1112,7 +1146,7 @@ async function handleAudioUpload(files) {
     drawAudioWaveform(currentAudioBuffer);
     lucide.createIcons();
   } catch (err) {
-    alert('Gagal memproses berkas audio: ' + err.message);
+    if (generation === audioUploadGeneration) alert('Gagal memproses berkas audio: ' + err.message);
   }
 }
 
@@ -1167,13 +1201,15 @@ function updateAudioTrimInputs() {
   document.getElementById('audio-end-time').value = end.toFixed(1);
 }
 
-function togglePlayAudioSelection() {
+async function togglePlayAudioSelection() {
   if (!currentAudioBuffer) return;
-  const ctx = getAudioContext();
   const btn = document.getElementById('btn-play-audio-selection');
 
-  if (isAudioPlaying) {
+  if (isAudioPlaying || audioPlayPending) {
+    ++audioPlayGeneration;
+    audioPlayPending = false;
     if (currentAudioSource) {
+      currentAudioSource.onended = null;
       currentAudioSource.stop();
       currentAudioSource = null;
     }
@@ -1183,24 +1219,42 @@ function togglePlayAudioSelection() {
     return;
   }
 
+  const generation = ++audioPlayGeneration;
+  const buffer = currentAudioBuffer;
   const start = parseFloat(document.getElementById('audio-start-time').value) || 0;
-  const end = parseFloat(document.getElementById('audio-end-time').value) || currentAudioBuffer.duration;
+  const end = parseFloat(document.getElementById('audio-end-time').value) || buffer.duration;
   const duration = Math.max(0.1, end - start);
+  audioPlayPending = true;
+  btn.textContent = 'Menyiapkan audio… (Batalkan)';
 
-  currentAudioSource = ctx.createBufferSource();
-  currentAudioSource.buffer = currentAudioBuffer;
-  currentAudioSource.connect(ctx.destination);
-  currentAudioSource.start(0, start, duration);
-
-  isAudioPlaying = true;
-  btn.innerHTML = `<i data-lucide="square" class="w-4 h-4"></i> Hentikan`;
-  lucide.createIcons();
-
-  currentAudioSource.onended = () => {
-    isAudioPlaying = false;
-    btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Putar Pilihan`;
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state !== 'running') await ctx.resume();
+    if (generation !== audioPlayGeneration) return;
+    if (ctx.state !== 'running') throw new Error('Audio belum dapat dimulai.');
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0, start, duration);
+    currentAudioSource = source;
+    audioPlayPending = false;
+    isAudioPlaying = true;
+    btn.innerHTML = `<i data-lucide="square" class="w-4 h-4"></i> Hentikan`;
     lucide.createIcons();
-  };
+    source.onended = () => {
+      if (generation !== audioPlayGeneration) return;
+      currentAudioSource = null;
+      isAudioPlaying = false;
+      btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Putar Pilihan`;
+      lucide.createIcons();
+    };
+  } catch (err) {
+    if (generation !== audioPlayGeneration) return;
+    audioPlayPending = false;
+    isAudioPlaying = false;
+    btn.textContent = 'Putar Pilihan';
+    alert('Gagal memutar audio: ' + (err && err.message ? err.message : 'Coba lagi.'));
+  }
 }
 
 function executeDownloadTrimmedAudio() {
