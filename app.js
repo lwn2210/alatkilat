@@ -1001,9 +1001,12 @@ async function handleExtractPdfUpload(files) {
 
   let pdf = null;
   try {
+    if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') {
+      throw new Error('PDF.js tidak tersedia. Periksa koneksi internet, lalu muat ulang halaman dan pilih kembali PDF untuk mencoba lagi.');
+    }
     const arrayBuffer = await file.arrayBuffer();
     if (generation !== extractPdfGeneration) return;
-    pdf = await pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
+    pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer, isEvalSupported: false }).promise;
     if (generation !== extractPdfGeneration) return;
     const numPages = pdf.numPages;
 
